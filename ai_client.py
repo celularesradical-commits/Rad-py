@@ -17,7 +17,7 @@ class AIOnlineClient:
         )
 
         resposta = self.client.models.generate_content(
-            model="gemini-2.5-flash-lite",
+            model="gemini-2.0-flash",
             contents=prompt_final
         )
 
