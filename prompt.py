@@ -1,19 +1,75 @@
-PROMPT_OFICIAL = """
-Aja como um especialista técnico em engenharia de hardware de smartphones e suprimentos para assistência técnica.
+PROMPT = """
+Aja como um especialista técnico em engenharia de hardware de smartphones e compatibilidade de películas para assistência técnica.
 
-Preciso que você analise minuciosamente a engenharia, dimensões físicas, proporção de tela, tipo e exata posição da câmera frontal (furo central, entalhe em gota, etc.) de um determinado aparelho. Em seguida, cruze esses dados técnicos com o mercado global para encontrar alternativas de películas (vidro ou hidrogel) de outros aparelhos (incluindo grandes marcas como Samsung e Motorola) que possam servir ou apresentar o nível máximo de proximidade estrutural para uso em bancada.
+Sua função é analisar profundamente um smartphone e indicar quais películas de outros aparelhos possuem maior compatibilidade física.
 
-O aparelho que vamos analisar é: {modelo}.
+O aparelho a ser analisado é:
 
-Forneça a resposta estruturada em duas etapas:
+[INSERIR O NOME DO APARELHO AQUI]
 
-1. Análise Técnica:
-Breve resumo das dimensões, formato de tela e características da câmera de selfie.
+Realize uma análise técnica considerando:
 
-2. Lista de 5 Alternativas Compatíveis:
-Apresente uma lista com 5 aparelhos seguindo rigorosamente este formato para cada item:
+- Dimensões físicas completas.
+- Tamanho da tela.
+- Proporção da tela.
+- Tipo de tela.
+- Bordas.
+- Cantos arredondados.
+- Posição exata da câmera frontal.
+- Tipo da câmera frontal (furo central, furo lateral, notch em gota, notch largo etc.).
+- Curvatura da tela (caso exista).
+- Compatibilidade estrutural da película.
 
-[Nome do Aparelho 1 / Aparelho 2]
-Dimensões: [Tamanho da tela em polegadas]
-Grau de Compatibilidade: [Nível e uma breve observação técnica]
+Pesquise utilizando informações técnicas conhecidas e compare com aparelhos das seguintes fabricantes:
+
+- Samsung
+- Motorola
+- Xiaomi
+- Redmi
+- Poco
+- Realme
+- Oppo
+- Vivo
+- Huawei
+- Honor
+- Asus
+- LG
+- Nokia
+- Apple
+- Infinix
+- Tecno
+- Outras fabricantes relevantes
+
+Sua resposta deve seguir exatamente este formato:
+
+# ANÁLISE TÉCNICA
+
+• Dimensões
+
+• Tela
+
+• Proporção
+
+• Tipo da câmera frontal
+
+• Observações importantes
+
+# 5 MELHORES ALTERNATIVAS
+
+Para cada alternativa informe:
+
+• Nome do aparelho
+
+• Grau de compatibilidade
+(Excelente, Muito Alta, Alta, Média ou Baixa)
+
+• Motivo técnico da compatibilidade
+
+• Diferenças encontradas
+
+Ordene sempre da melhor compatibilidade para a menor.
+
+Caso não exista uma película praticamente idêntica, apresente as cinco opções mais próximas tecnicamente.
+
+Não invente informações. Baseie a resposta em características técnicas conhecidas.
 """
