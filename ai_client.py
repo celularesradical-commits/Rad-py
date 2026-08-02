@@ -1,17 +1,13 @@
 import streamlit as st
-import google.generativeai as genai
+from google import genai
 
-from prompts import PROMPT
+from prompt import PROMPT
 
 
 class AIOnlineClient:
     def __init__(self):
-        api_key = st.secrets["GEMINI_API_KEY"]
-
-        genai.configure(api_key=api_key)
-
-        self.model = genai.GenerativeModel(
-            "gemini-2.5-flash"
+        self.client = genai.Client(
+            api_key=st.secrets["GEMINI_API_KEY"]
         )
 
     def pesquisar(self, modelo_aparelho: str) -> str:
@@ -20,6 +16,9 @@ class AIOnlineClient:
             modelo_aparelho
         )
 
-        resposta = self.model.generate_content(prompt_final)
+        resposta = self.client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt_final
+        )
 
         return resposta.text
