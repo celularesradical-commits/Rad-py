@@ -1,3 +1,4 @@
+import streamlit as st
 import google.generativeai as genai
 
 from prompts import PROMPT
@@ -5,7 +6,7 @@ from prompts import PROMPT
 
 class AIOnlineClient:
     def __init__(self):
-        api_key = "SUA_CHAVE_DA_API_AQUI"
+        api_key = st.secrets["GEMINI_API_KEY"]
 
         genai.configure(api_key=api_key)
 
