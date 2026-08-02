@@ -1,7 +1,7 @@
 import streamlit as st
 from google import genai
 
-from prompt import PROMPT
+from prompt import PROMPTS
 
 
 class AIOnlineClient:
