@@ -1,10 +1,11 @@
 import google.generativeai as genai
 
-from prompt import PROMPT
+from prompts import PROMPT
+
 
 class AIOnlineClient:
     def __init__(self):
-        api_key = "AQ.Ab8RN6KEmlqOJK8UVjZmpTYrMIt9KidWfJqphIugbP_qXVlOdA"
+        api_key = "SUA_CHAVE_DA_API_AQUI"
 
         genai.configure(api_key=api_key)
 
