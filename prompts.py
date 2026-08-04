@@ -25,28 +25,7 @@ Analise detalhadamente:
 - Espaçamento entre câmera e bordas.
 - Compatibilidade estrutural da película.
 
-Pesquise e compare aparelhos de todas as fabricantes relevantes, incluindo:
-
-- Samsung
-- Motorola
-- Xiaomi
-- Redmi
-- Poco
-- Realme
-- Oppo
-- Vivo
-- Huawei
-- Honor
-- Apple
-- Asus
-- LG
-- Nokia
-- Infinix
-- Tecno
-- Google Pixel
-- OnePlus
-- Sony
-- Demais fabricantes relevantes
+Pesquise e compare aparelhos de todas as fabricantes relevantes, 
 Utilize conhecimento técnico para encontrar as películas mais compatíveis existentes no mercado.
 
 Considere:
