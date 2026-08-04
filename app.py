@@ -1,43 +1,48 @@
 import streamlit as st
 
-# ==========================
+# ============================================
 # Configuração da página
-# ==========================
+# ============================================
+
 st.set_page_config(
     page_title="RadicalSystem",
     page_icon="📱",
     layout="centered"
 )
 
-# ==========================
+# ============================================
 # Cabeçalho
-# ==========================
+# ============================================
+
 st.title("📱 RadicalSystem")
 st.subheader("Sistema de Gestão para Assistência Técnica")
 
 st.markdown("---")
 
-st.write("""
-Bem-vindo ao **RadicalSystem**.
+st.write("Selecione um módulo abaixo:")
 
-Este sistema foi desenvolvido para facilitar a gestão da assistência técnica da Radical Celulares.
+# ============================================
+# Botões
+# ============================================
 
-### Módulos disponíveis
+if st.button("📋 Nova Ordem de Serviço", use_container_width=True):
+    st.switch_page("pages/ordens.py")
 
-- 📋 Nova Ordem de Serviço
-- 🔎 Pesquisar Ordem de Serviço
-- 🔍 Pesquisar Películas
-- 👥 Clientes
-- 📅 Agenda
-- ⚙️ Configurações
+if st.button("🔎 Pesquisar Ordem de Serviço", use_container_width=True):
+    st.switch_page("pages/pesquisar_os.py")
 
-➡️ Utilize o **menu lateral** para acessar cada módulo.
-""")
+if st.button("🔍 Pesquisar Películas", use_container_width=True):
+    st.switch_page("pages/peliculas.py")
 
-st.info("👈 Selecione um módulo no menu lateral.")
+if st.button("👥 Clientes", use_container_width=True):
+    st.switch_page("pages/clientes.py")
+
+if st.button("📅 Agenda", use_container_width=True):
+    st.switch_page("pages/agenda.py")
+
+if st.button("⚙️ Configurações", use_container_width=True):
+    st.switch_page("pages/configuracoes.py")
 
 st.markdown("---")
 
-st.success("Sistema iniciado com sucesso.")
-
-st.caption("© Radical Celulares • RadicalSystem • Versão 1.0")
+st.caption("Radical Celulares • RadicalSystem")
