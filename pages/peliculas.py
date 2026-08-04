@@ -1,42 +1,37 @@
+
+
 import streamlit as st
 from ai_client import AIOnlineClient
 
-# Configuração da página
-st.set_page_config(
-    page_title="Compatibilidade de Películas",
-    page_icon="📱",
-    layout="centered"
-)
 
-# Título
-st.title("📱 Compatibilidade de Películas")
+def tela():
 
-st.write(
-    "Digite o modelo do smartphone para pesquisar películas compatíveis."
-)
+    st.title("🔍 Pesquisar Películas")
 
-# Campo de pesquisa
-modelo = st.text_input(
-    "Modelo do smartphone",
-    placeholder="Ex.: iPhone 13, Galaxy S23, Redmi Note 12"
-)
+    st.write(
+        "Digite o modelo do smartphone para pesquisar películas compatíveis."
+    )
 
-# Botão
-if st.button("Pesquisar"):
+    modelo = st.text_input(
+        "Modelo do smartphone",
+        placeholder="Ex.: iPhone 13, Galaxy S23, Redmi Note 12"
+    )
 
-    if not modelo.strip():
-        st.warning("Digite um modelo de smartphone.")
+    if st.button("Pesquisar", use_container_width=True):
 
-    else:
-        try:
-            cliente = AIOnlineClient()
+        if not modelo.strip():
+            st.warning("Digite um modelo de smartphone.")
 
-            with st.spinner("Pesquisando compatibilidade..."):
-                resposta = cliente.pesquisar(modelo)
+        else:
+            try:
+                cliente = AIOnlineClient()
 
-            st.success("Pesquisa concluída!")
+                with st.spinner("Pesquisando compatibilidade..."):
+                    resposta = cliente.pesquisar(modelo)
 
-            st.markdown(resposta)
+                st.success("Pesquisa concluída!")
 
-        except Exception as erro:
-            st.error(f"Erro ao consultar a IA:\n\n{erro}")
+                st.markdown(resposta)
+
+            except Exception as erro:
+                st.error(f"Erro ao consultar a IA:\n\n{erro}")
