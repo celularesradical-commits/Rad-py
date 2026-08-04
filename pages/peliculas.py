@@ -3,13 +3,14 @@ from ai_client import AIOnlineClient
 
 # Configuração da página
 st.set_page_config(
-    page_title="Compatibilidade de Películas",
-    page_icon="📱",
+    page_title="Pesquisar Películas",
+    page_icon="🔍",
     layout="centered"
 )
 
 # Título
-st.title("📱 Compatibilidade de Películas")
+st.title("🔍 Pesquisar Películas")
+st.caption("RadicalSystem")
 
 st.write(
     "Digite o modelo do smartphone para pesquisar películas compatíveis."
@@ -22,7 +23,7 @@ modelo = st.text_input(
 )
 
 # Botão
-if st.button("Pesquisar"):
+if st.button("Pesquisar", use_container_width=True):
 
     if not modelo.strip():
         st.warning("Digite um modelo de smartphone.")
