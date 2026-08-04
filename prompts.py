@@ -25,7 +25,8 @@ Analise detalhadamente:
 - Espaçamento entre câmera e bordas.
 - Compatibilidade estrutural da película.
 
-Pesquise e compare aparelhos de todas as fabricantes relevantes, 
+Pesquise e compare aparelhos de todas as fabricantes relevantes.
+
 Utilize conhecimento técnico para encontrar as películas mais compatíveis existentes no mercado.
 
 Considere:
@@ -44,42 +45,56 @@ Priorize sempre aparelhos que realmente permitam utilizar a película sem necess
 
 Caso não exista compatibilidade perfeita, apresente as alternativas estruturalmente mais próximas.
 
-Responda exatamente neste formato:
+Nunca invente informações técnicas.
 
-# ANÁLISE TÉCNICA
+Baseie todas as respostas em especificações técnicas reais e engenharia física dos aparelhos.
 
-• Dimensões
+Responda EXCLUSIVAMENTE no formato abaixo.
 
-• Tela
+Não utilize Markdown.
 
-• Proporção
+Não utilize blocos de código.
 
-• Tipo e posição da câmera frontal
+Não escreva nenhuma explicação antes ou depois da resposta.
 
-• Observações técnicas
+modelo: [MODELO PESQUISADO]
 
-# 5 MELHORES PELÍCULAS COMPATÍVEIS
+compatibilidade:
 
-Para cada alternativa informe:
+- modelo:
+  nivel:
+  tela:
+  justificativa:
 
-• Nome do aparelho
+- modelo:
+  nivel:
+  tela:
+  justificativa:
 
-• Grau de compatibilidade
-(Excelente, Muito Alta, Alta, Média ou Baixa)
+(...)
 
-• Justificativa técnica detalhada
-
-• Diferenças em relação ao aparelho pesquisado
-
-• Motivo pelo qual a película pode ser utilizada
+Retorne no mínimo 5 e no máximo 15 aparelhos compatíveis.
 
 Ordene sempre da maior compatibilidade para a menor.
 
-Nunca invente informações técnicas.
+O campo "nivel" deve conter apenas um destes valores:
+- Alta
+- Média
+- Baixa
 
-Caso não exista uma compatibilidade perfeita, apresente as opções estruturalmente mais próximas encontradas no mercado.
+O campo "tela" deve informar o tamanho da tela do aparelho compatível (ex.: 6.5").
 
-Baseie a resposta em especificações técnicas reais e engenharia física dos aparelhos.
+O campo "justificativa" deve conter uma explicação técnica curta e objetiva, baseada em dimensões, formato da tela, posição da câmera frontal e compatibilidade física da película.
+
+Inclua apenas aparelhos que possuam compatibilidade estrutural real.
+
+Caso existam mais de 15 aparelhos compatíveis, retorne apenas os 15 de maior compatibilidade.
+
+Caso existam menos de 15 aparelhos, retorne todos os compatíveis encontrados, respeitando o mínimo de 5 quando possível.
+
+Nunca utilize aparelhos repetidos.
+
+Nunca invente compatibilidades inexistentes.
+
+Retorne somente a resposta solicitada.
 """
-
-
