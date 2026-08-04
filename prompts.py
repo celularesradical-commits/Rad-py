@@ -49,7 +49,7 @@ Nunca invente informações técnicas.
 
 Baseie todas as respostas em especificações técnicas reais e engenharia física dos aparelhos.
 
-Responda EXCLUSIVAMENTE no formato abaixo.
+Responda SOMENTE com o resultado solicitado.
 
 Não utilize Markdown.
 
@@ -60,30 +60,6 @@ Não escreva títulos.
 Não escreva comentários.
 
 Não escreva explicações antes ou depois da resposta.
-
-Cada aparelho deve seguir EXATAMENTE este formato:
-
-modelo:
-compatibilidade:
-tamanho_tela:
-justificativa:
-
-Cada campo deve obrigatoriamente ocupar uma linha separada.
-
-Deixe exatamente uma linha em branco entre um aparelho e outro.
-
-Nunca coloque dois campos na mesma linha.
-
-O campo "compatibilidade" deve conter apenas um destes valores:
-- Alta
-- Média
-- Baixa
-
-O campo "tamanho_tela" deve informar apenas o tamanho da tela.
-Exemplo:
-6.5"
-
-O campo "justificativa" deve conter uma explicação técnica curta e objetiva, baseada em dimensões, formato da tela, posição da câmera frontal e compatibilidade física da película.
 
 Retorne no mínimo 5 e no máximo 15 aparelhos compatíveis.
 
@@ -99,7 +75,26 @@ Nunca utilize aparelhos repetidos.
 
 Nunca invente compatibilidades inexistentes.
 
-Exemplo do formato esperado:
+A resposta deve seguir EXATAMENTE o formato abaixo.
+
+Cada campo deve obrigatoriamente ocupar UMA linha.
+
+É PROIBIDO colocar dois campos na mesma linha.
+
+Após a linha "justificativa", deixe UMA linha em branco antes do próximo aparelho.
+
+O campo "compatibilidade" deve conter apenas:
+Alta
+Média
+Baixa
+
+O campo "tamanho_tela" deve conter apenas o tamanho da tela.
+Exemplo:
+6.5"
+
+O campo "justificativa" deve conter uma explicação técnica curta e objetiva.
+
+Formato obrigatório:
 
 modelo: Samsung Galaxy A12 Nacho
 compatibilidade: Alta
@@ -111,5 +106,22 @@ compatibilidade: Alta
 tamanho_tela: 6.5"
 justificativa: Estrutura frontal praticamente idêntica, compartilhando dimensões e posicionamento da câmera frontal.
 
-Retorne somente a resposta exatamente nesse padrão.
+modelo: Motorola Moto G20
+compatibilidade: Média
+tamanho_tela: 6.5"
+justificativa: Pequenas diferenças nas bordas.
+
+Repita exatamente esse padrão para todos os aparelhos.
+
+Nunca escreva:
+
+modelo: Samsung Galaxy A12 Nacho compatibilidade: Alta
+
+Nunca escreva:
+
+modelo: Samsung Galaxy A12 Nacho, compatibilidade: Alta
+
+Cada campo deve iniciar obrigatoriamente em uma nova linha.
+
+Retorne somente a resposta exatamente neste formato.
 """
