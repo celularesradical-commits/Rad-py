@@ -55,46 +55,61 @@ Não utilize Markdown.
 
 Não utilize blocos de código.
 
-Não escreva nenhuma explicação antes ou depois da resposta.
+Não escreva títulos.
 
-modelo: [MODELO PESQUISADO]
+Não escreva comentários.
 
+Não escreva explicações antes ou depois da resposta.
+
+Cada aparelho deve seguir EXATAMENTE este formato:
+
+modelo:
 compatibilidade:
+tamanho_tela:
+justificativa:
 
-- modelo:
-  nivel:
-  tela:
-  justificativa:
+Cada campo deve obrigatoriamente ocupar uma linha separada.
 
-- modelo:
-  nivel:
-  tela:
-  justificativa:
+Deixe exatamente uma linha em branco entre um aparelho e outro.
 
-(...)
+Nunca coloque dois campos na mesma linha.
+
+O campo "compatibilidade" deve conter apenas um destes valores:
+- Alta
+- Média
+- Baixa
+
+O campo "tamanho_tela" deve informar apenas o tamanho da tela.
+Exemplo:
+6.5"
+
+O campo "justificativa" deve conter uma explicação técnica curta e objetiva, baseada em dimensões, formato da tela, posição da câmera frontal e compatibilidade física da película.
 
 Retorne no mínimo 5 e no máximo 15 aparelhos compatíveis.
 
 Ordene sempre da maior compatibilidade para a menor.
 
-O campo "nivel" deve conter apenas um destes valores:
-- Alta
-- Média
-- Baixa
-
-O campo "tela" deve informar o tamanho da tela do aparelho compatível (ex.: 6.5").
-
-O campo "justificativa" deve conter uma explicação técnica curta e objetiva, baseada em dimensões, formato da tela, posição da câmera frontal e compatibilidade física da película.
-
 Inclua apenas aparelhos que possuam compatibilidade estrutural real.
 
 Caso existam mais de 15 aparelhos compatíveis, retorne apenas os 15 de maior compatibilidade.
 
-Caso existam menos de 15 aparelhos, retorne todos os compatíveis encontrados, respeitando o mínimo de 5 quando possível.
+Caso existam menos de 15 aparelhos compatíveis, retorne todos os compatíveis encontrados.
 
 Nunca utilize aparelhos repetidos.
 
 Nunca invente compatibilidades inexistentes.
 
-Retorne somente a resposta solicitada.
+Exemplo do formato esperado:
+
+modelo: Samsung Galaxy A12 Nacho
+compatibilidade: Alta
+tamanho_tela: 6.5"
+justificativa: Mesma estrutura física, dimensões frontais muito semelhantes, cantos equivalentes e notch em "V".
+
+modelo: Samsung Galaxy M12
+compatibilidade: Alta
+tamanho_tela: 6.5"
+justificativa: Estrutura frontal praticamente idêntica, compartilhando dimensões e posicionamento da câmera frontal.
+
+Retorne somente a resposta exatamente nesse padrão.
 """
