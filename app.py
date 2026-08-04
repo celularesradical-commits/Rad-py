@@ -1,42 +1,73 @@
 import streamlit as st
-from ai_client import AIOnlineClient
 
+# ==========================
 # Configuração da página
+# ==========================
 st.set_page_config(
-    page_title="Compatibilidade de Películas",
+    page_title="RadicalSystem",
     page_icon="📱",
     layout="centered"
 )
 
-# Título
-st.title("📱 Compatibilidade de Películas")
+# ==========================
+# Cabeçalho
+# ==========================
+st.title("📱 RadicalSystem")
+st.subheader("Sistema de Gestão para Assistência Técnica")
+
+st.markdown("---")
 
 st.write(
-    "Digite o modelo do smartphone para pesquisar películas compatíveis."
+    """
+Bem-vindo ao **RadicalSystem**.
+
+Selecione uma opção abaixo:
+"""
 )
 
-# Campo de pesquisa
-modelo = st.text_input(
-    "Modelo do smartphone",
-    placeholder="Ex.: iPhone 13, Galaxy S23, Redmi Note 12"
+# ==========================
+# Menu Principal
+# ==========================
+
+st.page_link(
+    "pages/ordens.py",
+    label="📋 Nova Ordem de Serviço",
+    icon="📋"
 )
 
-# Botão
-if st.button("Pesquisar"):
+st.page_link(
+    "pages/pesquisar_os.py",
+    label="🔎 Pesquisar Ordem de Serviço",
+    icon="🔎"
+)
 
-    if not modelo.strip():
-        st.warning("Digite um modelo de smartphone.")
+st.page_link(
+    "pages/peliculas.py",
+    label="🔍 Pesquisar Películas",
+    icon="🔍"
+)
 
-    else:
-        try:
-            cliente = AIOnlineClient()
+st.page_link(
+    "pages/clientes.py",
+    label="👥 Clientes",
+    icon="👥"
+)
 
-            with st.spinner("Pesquisando compatibilidade..."):
-                resposta = cliente.pesquisar(modelo)
+st.page_link(
+    "pages/agenda.py",
+    label="📅 Agenda",
+    icon="📅"
+)
 
-            st.success("Pesquisa concluída!")
+st.page_link(
+    "pages/configuracoes.py",
+    label="⚙️ Configurações",
+    icon="⚙️"
+)
 
-            st.markdown(resposta)
+st.markdown("---")
 
-        except Exception as erro:
-            st.error(f"Erro ao consultar a IA:\n\n{erro}")
+st.info(
+    "Versão 1.0 - RadicalSystem\n\n"
+    "Desenvolvido para gerenciamento de assistência técnica."
+)
