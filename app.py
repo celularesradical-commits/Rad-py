@@ -10,111 +10,34 @@ st.set_page_config(
 )
 
 # ==========================
-# Estado da navegação
+# Cabeçalho
 # ==========================
-if "pagina" not in st.session_state:
-    st.session_state.pagina = "inicio"
+st.title("📱 RadicalSystem")
+st.subheader("Sistema de Gestão para Assistência Técnica")
 
+st.markdown("---")
 
-def abrir(pagina):
-    st.session_state.pagina = pagina
+st.write("""
+Bem-vindo ao **RadicalSystem**.
 
+Este sistema foi desenvolvido para facilitar a gestão da assistência técnica da Radical Celulares.
 
-# ==========================
-# Página Inicial
-# ==========================
-if st.session_state.pagina == "inicio":
+### Módulos disponíveis
 
-    st.title("📱 RadicalSystem")
-    st.subheader("Sistema de Gestão para Assistência Técnica")
+- 📋 Nova Ordem de Serviço
+- 🔎 Pesquisar Ordem de Serviço
+- 🔍 Pesquisar Películas
+- 👥 Clientes
+- 📅 Agenda
+- ⚙️ Configurações
 
-    st.markdown("---")
+➡️ Utilize o **menu lateral** para acessar cada módulo.
+""")
 
-    st.write("Selecione uma opção:")
+st.info("👈 Selecione um módulo no menu lateral.")
 
-    if st.button("📋 Nova Ordem de Serviço", use_container_width=True):
-        abrir("ordens")
-        st.rerun()
+st.markdown("---")
 
-    if st.button("🔎 Pesquisar Ordem de Serviço", use_container_width=True):
-        abrir("pesquisar_os")
-        st.rerun()
+st.success("Sistema iniciado com sucesso.")
 
-    if st.button("🔍 Pesquisar Películas", use_container_width=True):
-        abrir("peliculas")
-        st.rerun()
-
-    if st.button("👥 Clientes", use_container_width=True):
-        abrir("clientes")
-        st.rerun()
-
-    if st.button("📅 Agenda", use_container_width=True):
-        abrir("agenda")
-        st.rerun()
-
-    if st.button("⚙️ Configurações", use_container_width=True):
-        abrir("configuracoes")
-        st.rerun()
-
-    st.markdown("---")
-    st.caption("Radical Celulares • RadicalSystem")
-
-# ==========================
-# Pesquisar Películas
-# ==========================
-elif st.session_state.pagina == "peliculas":
-
-    if st.button("⬅ Voltar"):
-        abrir("inicio")
-        st.rerun()
-
-    import pages.peliculas
-
-# ==========================
-# Demais módulos
-# ==========================
-elif st.session_state.pagina == "ordens":
-
-    if st.button("⬅ Voltar"):
-        abrir("inicio")
-        st.rerun()
-
-    st.title("📋 Nova Ordem de Serviço")
-    st.info("Em desenvolvimento.")
-
-elif st.session_state.pagina == "pesquisar_os":
-
-    if st.button("⬅ Voltar"):
-        abrir("inicio")
-        st.rerun()
-
-    st.title("🔎 Pesquisar Ordem de Serviço")
-    st.info("Em desenvolvimento.")
-
-elif st.session_state.pagina == "clientes":
-
-    if st.button("⬅ Voltar"):
-        abrir("inicio")
-        st.rerun()
-
-    st.title("👥 Clientes")
-    st.info("Em desenvolvimento.")
-
-elif st.session_state.pagina == "agenda":
-
-    if st.button("⬅ Voltar"):
-        abrir("inicio")
-        st.rerun()
-
-    st.title("📅 Agenda")
-    st.info("Em desenvolvimento.")
-
-elif st.session_state.pagina == "configuracoes":
-
-    if st.button("⬅ Voltar"):
-        abrir("inicio")
-        st.rerun()
-
-    st.title("⚙️ Configurações")
-    st.info("Em desenvolvimento.")
-    
+st.caption("© Radical Celulares • RadicalSystem • Versão 1.0")
