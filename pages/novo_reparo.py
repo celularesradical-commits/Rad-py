@@ -2,7 +2,6 @@ import streamlit as st
 from datetime import datetime
 
 from database import salvar_os
-from utils.impressao import imprimir_os
 
 st.set_page_config(
     page_title="Nova Ordem de Serviço",
@@ -78,7 +77,7 @@ if salvar:
 
             observacoes=observacoes
 
-        )        imprimir_os(numero_os)
+        )
 
         st.success(
             f"✅ Ordem de Serviço {numero_os} cadastrada com sucesso!"
@@ -90,4 +89,6 @@ if salvar:
 
         st.balloons()
 
-        st.rerun()# FIM DO ARQUIVO pages/novo_reparo.py
+        st.rerun()
+
+# FIM DO ARQUIVO pages/novo_reparo.py
