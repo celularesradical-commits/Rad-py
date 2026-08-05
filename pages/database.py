@@ -6,29 +6,63 @@ DB_PATH = Path("radicalsystem.db")
 
 
 def conectar():
-    """Retorna uma conexão com o banco de dados."""
+    """Conecta ao banco de dados."""
     return sqlite3.connect(DB_PATH)
 
 
 def criar_banco():
-    """Cria o banco de dados e as tabelas, caso não existam."""
+    """Cria as tabelas do sistema."""
+
     conn = conectar()
     cursor = conn.cursor()
 
-    # Tabela de Ordens de Serviço
+    # Ordem de Serviço
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS ordens_servico (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            modelo TEXT,
-            defeito TEXT,
-            valor REAL,
-            data_retirada TEXT,
-            cliente TEXT,
+            cliente TEXT NOT NULL,
             contato TEXT,
-            observacoes TEXT,
-            status TEXT DEFAULT 'Recebido',
+            modelo TEXT NOT NULL,
+            defeito TEXT,
+            valor REAL DEFAULT 0,
             data_entrada TEXT,
-            data_entrega TEXT
+            data_retirada TEXT,
+            data_entrega TEXT,
+            observacoes TEXT,
+            status TEXT DEFAULT 'Recebido'
+        )
+    """)
+
+    # Agenda
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS agenda (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            os_id INTEGER,
+            cliente TEXT,
+            modelo TEXT,
+            data TEXT,
+            concluido INTEGER DEFAULT 0
+        )
+    """)
+
+    # Estoque
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS estoque (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            produto TEXT,
+            quantidade INTEGER DEFAULT 0,
+            valor REAL DEFAULT 0
+        )
+    """)
+
+    # Configurações
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS configuracoes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa TEXT,
+            telefone TEXT,
+            endereco TEXT,
+            garantia TEXT
         )
     """)
 
@@ -36,5 +70,9 @@ def criar_banco():
     conn.close()
 
 
-# Cria o banco automaticamente ao importar este arquivo
+# Cria o banco automaticamente
 criar_banco()
+
+
+if __name__ == "__main__":
+    print("Banco de dados criado com sucesso.")
