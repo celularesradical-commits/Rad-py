@@ -1,44 +1,15 @@
-import streamlit as st
+def pesquisar_os(texto):
 
-st.set_page_config(
-    page_title="Ordem de Serviço",
-    page_icon="📋",
-    layout="centered"
-)
+    consulta = supabase.table("ordens_servico").select("*")
 
-st.title("📋 Ordem de Serviço")
-st.write("Selecione uma opção:")
+    if texto.isdigit():
+        resposta = consulta.eq("numero_os", int(texto)).execute()
+        print("Pesquisa por número:", resposta.data)
+        return resposta.data
 
-st.divider()
+    resposta = consulta.or_(
+        f"cliente.ilike.%{texto}%,modelo.ilike.%{texto}%,contato.ilike.%{texto}%"
+    ).execute()
 
-if st.button(
-    "➕ Novo Reparo",
-    use_container_width=True
-):
-    st.switch_page("pages/novo_reparo.py")
-
-if st.button(
-    "🔎 Pesquisar Reparo",
-    use_container_width=True
-):
-    st.switch_page("pages/pesquisar_reparo.py")
-
-if st.button(
-    "🔧 Reparos em Andamento",
-    use_container_width=True
-):
-    st.switch_page("pages/reparos_andamento.py")
-
-if st.button(
-    "✅ Entregar Aparelho",
-    use_container_width=True
-):
-    st.switch_page("pages/entregar_aparelho.py")
-
-st.divider()
-
-if st.button(
-    "⬅️ Voltar ao Menu",
-    use_container_width=True
-):
-    st.switch_page("app.py")
+    print("Pesquisa por texto:", resposta.data)
+    return resposta.data
