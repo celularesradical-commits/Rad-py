@@ -25,7 +25,10 @@ if st.session_state.get("os_salva", False):
         f"Ordem de Serviço Nº {st.session_state.numero_os}"
     )
 
-    if st.button("OK", use_container_width=True):
+    if st.button(
+        "OK",
+        use_container_width=True
+    ):
         st.session_state.clear()
         st.switch_page("app.py")
 
@@ -55,7 +58,8 @@ defeito = st.text_area(
 valor = st.number_input(
     "💰 Valor do Reparo",
     min_value=1.0,
-    format="%.2f"
+    step=1.0,
+    format="%.0f"
 )
 
 cliente = st.text_input(
@@ -74,6 +78,30 @@ observacoes = st.text_area(
     "📝 Observações",
     height=120
 )
+
+# -------------------------
+# Fotos
+# -------------------------
+
+st.divider()
+
+st.subheader("📸 Fotos do Aparelho")
+
+foto = st.camera_input(
+    "Fotografar aparelho"
+)
+
+if foto:
+
+    st.image(
+        foto,
+        caption="Foto capturada",
+        use_container_width=True
+    )
+
+# -------------------------
+# Botões
+# -------------------------
 
 st.divider()
 
