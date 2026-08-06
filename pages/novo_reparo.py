@@ -1,5 +1,6 @@
 import streamlit as st
 from database import salvar_os, gerar_numero_os
+from fotos import enviar_foto
 
 st.set_page_config(
     page_title="Novo Reparo",
@@ -91,7 +92,7 @@ foto = st.camera_input(
     "Fotografar aparelho"
 )
 
-if foto:
+if foto is not None:
 
     st.image(
         foto,
@@ -133,6 +134,19 @@ with col1:
                     data_retirada,
                     observacoes
                 )
+
+                # -------------------------
+                # Salvar foto
+                # -------------------------
+
+                if foto is not None:
+
+                    try:
+                        enviar_foto(numero, foto)
+                    except Exception as erro:
+                        st.warning(
+                            f"OS salva, porém a foto não foi enviada.\n\n{erro}"
+                        )
 
                 st.session_state.numero_os = numero
                 st.session_state.os_salva = True
