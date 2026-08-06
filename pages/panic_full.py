@@ -1,6 +1,7 @@
 import streamlit as st
 
 from ai_client import AIOnlineClient
+from panic_parser import extrair_resumo
 
 st.set_page_config(
     page_title="Analisador de Panic Full",
@@ -36,10 +37,14 @@ if arquivo is not None:
                     errors="ignore"
                 )
 
+                resumo = extrair_resumo(
+                    conteudo
+                )
+
                 ia = AIOnlineClient()
 
                 resposta = ia.analisar_panic(
-                    conteudo
+                    resumo
                 )
 
                 st.success("Análise concluída!")
