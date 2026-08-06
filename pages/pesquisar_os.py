@@ -2,18 +2,27 @@ import streamlit as st
 from database import pesquisar_os, entregar_os
 
 st.set_page_config(
-    page_title="Pesquisar Reparo",
+    page_title="Pesquisar Ordem de Serviço",
     page_icon="🔎",
     layout="centered"
 )
 
-st.title("🔎 Pesquisar Reparo")
+st.title("🔎 Pesquisar Ordem de Serviço")
+
+# ===========================
+# ESTADO
+# ===========================
+
+if "resultado_pesquisa" not in st.session_state:
+    st.session_state.resultado_pesquisa = []
+
+# ===========================
+# PESQUISA
+# ===========================
 
 pesquisa = st.text_input(
     "Digite o número da OS, cliente, modelo ou contato"
 )
-
-st.divider()
 
 if st.button(
     "🔍 Pesquisar",
@@ -22,95 +31,92 @@ if st.button(
 
     if pesquisa.strip() == "":
         st.warning("Digite algo para pesquisar.")
-
     else:
+        st.session_state.resultado_pesquisa = pesquisar_os(pesquisa)
 
-        resultados = pesquisar_os(pesquisa)
+st.divider()
 
-        if len(resultados) == 0:
+# ===========================
+# RESULTADOS
+# ===========================
 
-            st.error("Nenhum reparo encontrado.")
+if st.session_state.resultado_pesquisa:
 
-        else:
+    for os in st.session_state.resultado_pesquisa:
 
-            for os in resultados:
+        with st.container(border=True):
 
-                with st.container(border=True):
+            st.markdown("## 📄 Ordem de Serviço")
 
-                    st.markdown("## 📄 Ordem de Serviço")
+            st.write(f"**🆔 Número da OS:** {os['numero_os']}")
+            st.write(f"**👤 Cliente:** {os['cliente']}")
+            st.write(f"**📱 Modelo:** {os['modelo']}")
+            st.write(f"**🔧 Defeito:** {os['defeito']}")
+            st.write(f"**📞 Contato:** {os['contato']}")
+            st.write(f"**💰 Valor:** R$ {float(os['valor']):.2f}")
+            st.write(f"**📅 Entrada:** {os['data_entrada']}")
+            st.write(f"**📅 Retirada:** {os['data_retirada']}")
+            st.write(f"**📌 Status:** {os['status']}")
 
-                    st.write(f"**🆔 Número da OS:** {os['numero_os']}")
-                    st.write(f"**👤 Cliente:** {os['cliente']}")
-                    st.write(f"**📱 Modelo:** {os['modelo']}")
-                    st.write(f"**🔧 Defeito:** {os['defeito']}")
-                    st.write(f"**📞 Contato:** {os['contato']}")
-                    st.write(f"**💰 Valor:** R$ {float(os['valor']):.2f}")
-                    st.write(f"**📅 Entrada:** {os['data_entrada']}")
-                    st.write(f"**📅 Retirada:** {os['data_retirada']}")
-                    st.write(f"**📌 Status:** {os['status']}")
+            if os["observacoes"]:
+                st.write(f"**📝 Observações:** {os['observacoes']}")
 
-                    if os["observacoes"]:
-                        st.write(f"**📝 Observações:** {os['observacoes']}")
+            st.divider()
 
-                    st.divider()
+            col1, col2, col3 = st.columns(3)
 
-                    col1, col2, col3 = st.columns(3)
+            # ===========================
+            # EDITAR
+            # ===========================
 
-                    # ======================
-                    # EDITAR
-                    # ======================
+            with col1:
 
-                    with col1:
+                if st.button(
+                    "✏️ Editar",
+                    key=f"editar_{os['numero_os']}",
+                    use_container_width=True
+                ):
 
-                        if st.button(
-                            "✏️ Editar",
-                            key=f"editar_{os['numero_os']}",
-                            use_container_width=True
-                        ):
+                    st.session_state["os_editar"] = os["numero_os"]
 
-                            st.session_state.os_editar = os["numero_os"]
+                    st.switch_page("pages/editar_reparo.py")
 
-                            st.switch_page(
-                                "pages/editar_reparo.py"
-                            )
+            # ===========================
+            # ENTREGAR
+            # ===========================
 
-                    # ======================
-                    # ENTREGAR
-                    # ======================
+            with col2:
 
-                    with col2:
+                if st.button(
+                    "✅ Entregar",
+                    key=f"entregar_{os['numero_os']}",
+                    use_container_width=True
+                ):
 
-                        if st.button(
-                            "✅ Entregar",
-                            key=f"entregar_{os['numero_os']}",
-                            use_container_width=True
-                        ):
+                    entregar_os(os["numero_os"])
 
-                            entregar_os(
-                                os["numero_os"]
-                            )
+                    st.success("Aparelho entregue com sucesso!")
 
-                            st.success(
-                                "Aparelho entregue com sucesso."
-                            )
+                    st.session_state.resultado_pesquisa = pesquisar_os(pesquisa)
 
-                            st.rerun()
+                    st.rerun()
 
-                    # ======================
-                    # IMPRIMIR
-                    # ======================
+            # ===========================
+            # IMPRIMIR
+            # ===========================
 
-                    with col3:
+            with col3:
 
-                        if st.button(
-                            "🖨️ Imprimir",
-                            key=f"imprimir_{os['numero_os']}",
-                            use_container_width=True
-                        ):
+                if st.button(
+                    "🖨️ Imprimir",
+                    key=f"imprimir_{os['numero_os']}",
+                    use_container_width=True
+                ):
 
-                            st.info(
-                                "Função disponível em breve."
-                            )
+                    st.info("Função disponível em breve.")
+
+elif pesquisa != "":
+    st.error("Nenhuma Ordem de Serviço encontrada.")
 
 st.divider()
 
@@ -118,4 +124,5 @@ if st.button(
     "⬅️ Voltar",
     use_container_width=True
 ):
+    st.session_state.pop("resultado_pesquisa", None)
     st.switch_page("app.py")
