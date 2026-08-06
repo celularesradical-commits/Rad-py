@@ -1,5 +1,5 @@
 import streamlit as st
-from database import pesquisar_os
+from database import pesquisar_os, entregar_os
 
 st.set_page_config(
     page_title="Pesquisar Reparo",
@@ -56,29 +56,61 @@ if st.button(
 
                     col1, col2, col3 = st.columns(3)
 
+                    # ======================
+                    # EDITAR
+                    # ======================
+
                     with col1:
+
                         if st.button(
                             "✏️ Editar",
                             key=f"editar_{os['numero_os']}",
                             use_container_width=True
                         ):
-                            st.info("Função em desenvolvimento.")
+
+                            st.session_state.os_editar = os["numero_os"]
+
+                            st.switch_page(
+                                "pages/editar_reparo.py"
+                            )
+
+                    # ======================
+                    # ENTREGAR
+                    # ======================
 
                     with col2:
+
                         if st.button(
                             "✅ Entregar",
                             key=f"entregar_{os['numero_os']}",
                             use_container_width=True
                         ):
-                            st.info("Função em desenvolvimento.")
+
+                            entregar_os(
+                                os["numero_os"]
+                            )
+
+                            st.success(
+                                "Aparelho entregue com sucesso."
+                            )
+
+                            st.rerun()
+
+                    # ======================
+                    # IMPRIMIR
+                    # ======================
 
                     with col3:
+
                         if st.button(
                             "🖨️ Imprimir",
                             key=f"imprimir_{os['numero_os']}",
                             use_container_width=True
                         ):
-                            st.info("Em breve.")
+
+                            st.info(
+                                "Função disponível em breve."
+                            )
 
 st.divider()
 
