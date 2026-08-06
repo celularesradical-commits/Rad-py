@@ -70,19 +70,13 @@ def salvar_os(
 
 def pesquisar_os(texto):
 
-    consulta = supabase.table("ordens_servico").select("*")
-
-    if texto.isdigit():
-        consulta = consulta.eq("numero_os", int(texto))
-    else:
-        consulta = consulta.or_(
-            f"cliente.ilike.%{texto}%,modelo.ilike.%{texto}%,contato.ilike.%{texto}%"
-        )
-
-    resposta = consulta.execute()
+    resposta = (
+        supabase.table("ordens_servico")
+        .select("*")
+        .execute()
+    )
 
     return resposta.data
-
 
 # ===========================
 # REPAROS EM ANDAMENTO
