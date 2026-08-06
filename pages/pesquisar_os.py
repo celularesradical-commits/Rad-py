@@ -15,7 +15,10 @@ pesquisa = st.text_input(
 
 st.divider()
 
-if st.button("🔍 Pesquisar", use_container_width=True):
+if st.button(
+    "🔍 Pesquisar",
+    use_container_width=True
+):
 
     if pesquisa.strip() == "":
         st.warning("Digite algo para pesquisar.")
@@ -32,25 +35,55 @@ if st.button("🔍 Pesquisar", use_container_width=True):
 
             for os in resultados:
 
-                st.container(border=True)
+                with st.container(border=True):
 
-                st.markdown(f"### 📄 Ordem de Serviço {os['numero_os']}")
+                    st.markdown("## 📄 Ordem de Serviço")
 
-                st.write(f"**Cliente:** {os['cliente']}")
-                st.write(f"**Modelo:** {os['modelo']}")
-                st.write(f"**Defeito:** {os['defeito']}")
-                st.write(f"**Contato:** {os['contato']}")
-                st.write(f"**Valor:** R$ {os['valor']}")
-                st.write(f"**Entrada:** {os['data_entrada']}")
-                st.write(f"**Retirada:** {os['data_retirada']}")
-                st.write(f"**Status:** {os['status']}")
+                    st.write(f"**🆔 Número da OS:** {os['numero_os']}")
+                    st.write(f"**👤 Cliente:** {os['cliente']}")
+                    st.write(f"**📱 Modelo:** {os['modelo']}")
+                    st.write(f"**🔧 Defeito:** {os['defeito']}")
+                    st.write(f"**📞 Contato:** {os['contato']}")
+                    st.write(f"**💰 Valor:** R$ {float(os['valor']):.2f}")
+                    st.write(f"**📅 Entrada:** {os['data_entrada']}")
+                    st.write(f"**📅 Retirada:** {os['data_retirada']}")
+                    st.write(f"**📌 Status:** {os['status']}")
 
-                if os["observacoes"]:
-                    st.write(f"**Observações:** {os['observacoes']}")
+                    if os["observacoes"]:
+                        st.write(f"**📝 Observações:** {os['observacoes']}")
 
-                st.divider()
+                    st.divider()
+
+                    col1, col2, col3 = st.columns(3)
+
+                    with col1:
+                        if st.button(
+                            "✏️ Editar",
+                            key=f"editar_{os['numero_os']}",
+                            use_container_width=True
+                        ):
+                            st.info("Função em desenvolvimento.")
+
+                    with col2:
+                        if st.button(
+                            "✅ Entregar",
+                            key=f"entregar_{os['numero_os']}",
+                            use_container_width=True
+                        ):
+                            st.info("Função em desenvolvimento.")
+
+                    with col3:
+                        if st.button(
+                            "🖨️ Imprimir",
+                            key=f"imprimir_{os['numero_os']}",
+                            use_container_width=True
+                        ):
+                            st.info("Em breve.")
 
 st.divider()
 
-if st.button("⬅️ Voltar", use_container_width=True):
+if st.button(
+    "⬅️ Voltar",
+    use_container_width=True
+):
     st.switch_page("app.py")
