@@ -1,15 +1,25 @@
 def pesquisar_os(texto):
 
-    consulta = supabase.table("ordens_servico").select("*")
+    resposta = (
+        supabase.table("ordens_servico")
+        .select("*")
+        .execute()
+    )
 
-    if texto.isdigit():
-        resposta = consulta.eq("numero_os", int(texto)).execute()
-        print("Pesquisa por número:", resposta.data)
-        return resposta.data
+    dados = resposta.data
 
-    resposta = consulta.or_(
-        f"cliente.ilike.%{texto}%,modelo.ilike.%{texto}%,contato.ilike.%{texto}%"
-    ).execute()
+    texto = str(texto).strip().lower()
 
-    print("Pesquisa por texto:", resposta.data)
-    return resposta.data
+    resultados = []
+
+    for os in dados:
+
+        if (
+            texto == str(os.get("numero_os", "")).lower()
+            or texto in str(os.get("cliente", "")).lower()
+            or texto in str(os.get("modelo", "")).lower()
+            or texto in str(os.get("contato", "")).lower()
+        ):
+            resultados.append(os)
+
+    return resultados
