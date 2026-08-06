@@ -24,6 +24,9 @@ if st.button("🔍 Pesquisar", use_container_width=True):
 
         resultados = pesquisar_os(pesquisa)
 
+        # TESTE
+        st.write(resultados)
+
         if len(resultados) == 0:
 
             st.error("Nenhum reparo encontrado.")
@@ -32,25 +35,26 @@ if st.button("🔍 Pesquisar", use_container_width=True):
 
             for os in resultados:
 
-                st.container(border=True)
+                with st.container(border=True):
 
-                st.markdown(f"### 📄 Ordem de Serviço {os['numero_os']}")
+                    st.markdown(f"### 📄 Ordem de Serviço {os['numero_os']}")
 
-                st.write(f"**Cliente:** {os['cliente']}")
-                st.write(f"**Modelo:** {os['modelo']}")
-                st.write(f"**Defeito:** {os['defeito']}")
-                st.write(f"**Contato:** {os['contato']}")
-                st.write(f"**Valor:** R$ {os['valor']}")
-                st.write(f"**Entrada:** {os['data_entrada']}")
-                st.write(f"**Retirada:** {os['data_retirada']}")
-                st.write(f"**Status:** {os['status']}")
+                    st.write(f"**Cliente:** {os['cliente']}")
+                    st.write(f"**Modelo:** {os['modelo']}")
+                    st.write(f"**Defeito:** {os['defeito']}")
+                    st.write(f"**Contato:** {os['contato']}")
+                    st.write(f"**Valor:** R$ {os['valor']}")
+                    st.write(f"**Entrada:** {os['data_entrada']}")
+                    st.write(f"**Retirada:** {os['data_retirada']}")
+                    st.write(f"**Status:** {os['status']}")
 
-                if os["observacoes"]:
-                    st.write(f"**Observações:** {os['observacoes']}")
-
-                st.divider()
+                    if os["observacoes"]:
+                        st.write(f"**Observações:** {os['observacoes']}")
 
 st.divider()
 
-if st.button("⬅️ Voltar", use_container_width=True):
+if st.button(
+    "⬅️ Voltar",
+    use_container_width=True
+):
     st.switch_page("app.py")
