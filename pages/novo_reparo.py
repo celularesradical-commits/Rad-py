@@ -21,10 +21,16 @@ if "proxima_os" not in st.session_state:
 
 if st.session_state.get("os_salva", False):
 
-    st.success(
-        f"✅ Nota salva com sucesso!\n\n"
-        f"Ordem de Serviço Nº {st.session_state.numero_os}"
-    )
+    if st.session_state.get("foto_salva", False):
+        st.success(
+            f"✅ Nota e foto salvas com sucesso!\n\n"
+            f"Ordem de Serviço Nº {st.session_state.numero_os}"
+        )
+    else:
+        st.success(
+            f"✅ Nota salva com sucesso!\n\n"
+            f"Ordem de Serviço Nº {st.session_state.numero_os}"
+        )
 
     if st.button(
         "OK",
@@ -47,7 +53,9 @@ st.text_input(
     disabled=True
 )
 
-modelo = st.text_input("📱 Modelo do Celular")
+modelo = st.text_input(
+    "📱 Modelo do Celular"
+)
 
 defeito = st.text_area(
     "🔧 Defeito Identificado",
@@ -61,9 +69,13 @@ valor = st.number_input(
     format="%.0f"
 )
 
-cliente = st.text_input("👤 Nome do Cliente")
+cliente = st.text_input(
+    "👤 Nome do Cliente"
+)
 
-contato = st.text_input("📞 Contato")
+contato = st.text_input(
+    "📞 Contato"
+)
 
 data_retirada = st.date_input(
     "📅 Data Prevista de Retirada"
@@ -75,12 +87,12 @@ observacoes = st.text_area(
 )
 
 # -------------------------
-# Fotos
+# Foto
 # -------------------------
 
 st.divider()
 
-st.subheader("📸 Fotos do Aparelho")
+st.subheader("📸 Foto do Aparelho")
 
 foto = st.camera_input(
     "Fotografar aparelho"
@@ -108,10 +120,14 @@ with col1:
         use_container_width=True
     ):
 
-        if modelo == "" or cliente == "":
-
+        if modelo.strip() == "" or cliente.strip() == "":
             st.warning(
                 "Preencha o modelo e o nome do cliente."
+            )
+
+        elif foto is None:
+            st.warning(
+                "Tire uma foto do aparelho antes de salvar."
             )
 
         else:
@@ -128,30 +144,37 @@ with col1:
                     observacoes
                 )
 
-                st.info(f"Número da OS: {numero}")
+                try:
 
-                if foto is None:
+                    resultado_foto = enviar_foto(
+                        numero,
+                        foto
+                    )
 
-                    st.warning("Nenhuma foto capturada.")
+                    if resultado_foto is not True:
+                        raise RuntimeError(
+                            f"Resposta inesperada do envio: {resultado_foto}"
+                        )
 
-                else:
+                    st.session_state.numero_os = numero
+                    st.session_state.foto_salva = True
+                    st.session_state.os_salva = True
 
-                    st.info("Chamando enviar_foto()...")
+                    st.rerun()
 
-                    resultado = enviar_foto(numero, foto)
+                except Exception as erro_foto:
 
-                    st.info(f"Resultado: {resultado}")
-
-                    st.success("Retornou de enviar_foto().")
-
-                st.session_state.numero_os = numero
-                st.session_state.os_salva = True
-
-                st.rerun()
+                    st.error(
+                        f"A OS Nº {numero} foi salva, "
+                        f"mas a foto não foi enviada.\n\n"
+                        f"Erro: {erro_foto}"
+                    )
 
             except Exception as erro:
 
-                st.error(f"ERRO:\n\n{erro}")
+                st.error(
+                    f"Erro ao salvar a ordem de serviço:\n\n{erro}"
+                )
 
 with col2:
 
