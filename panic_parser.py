@@ -27,10 +27,9 @@ def extrair_resumo(conteudo: str) -> str:
     linhas = conteudo.splitlines()
 
     resumo = []
+    encontrados = set()
 
     resumo.append("===== RESUMO TÉCNICO =====\n")
-
-    encontrados = set()
 
     for linha in linhas:
 
@@ -39,14 +38,32 @@ def extrair_resumo(conteudo: str) -> str:
         if not texto:
             continue
 
+        # Ignora linhas enormes
+        if len(texto) > 250:
+            continue
+
         for secao in secoes:
 
             if secao.lower() in texto.lower():
 
-                if texto not in encontrados:
-                    resumo.append(texto)
-                    encontrados.add(texto)
+                chave = secao.lower()
 
+                # Apenas uma ocorrência por seção principal
+                if chave in [
+                    "product",
+                    "model",
+                    "os_version",
+                    "bug_type",
+                    "panicstring",
+                    "debugger message"
+                ]:
+
+                    if chave in encontrados:
+                        break
+
+                    encontrados.add(chave)
+
+                resumo.append(texto)
                 break
 
     resumo.append("\n===== FIM DO RESUMO =====")
