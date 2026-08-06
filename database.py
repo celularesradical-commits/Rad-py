@@ -16,6 +16,7 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 # ===========================
 
 def gerar_numero_os():
+
     resposta = (
         supabase.table("ordens_servico")
         .select("numero_os")
@@ -83,6 +84,50 @@ def pesquisar_os(texto):
 
     return resposta.data
 
+
+# ===========================
+# BUSCAR UMA OS
+# ===========================
+
+def buscar_os(numero):
+
+    resposta = (
+        supabase.table("ordens_servico")
+        .select("*")
+        .eq("numero_os", numero)
+        .limit(1)
+        .execute()
+    )
+
+    if resposta.data:
+        return resposta.data[0]
+
+    return None
+
+
+# ===========================
+# EDITAR ORDEM
+# ===========================
+
+def editar_os(
+    numero,
+    valor,
+    observacoes,
+    retirada
+):
+
+    supabase.table("ordens_servico").update({
+
+        "valor": float(valor),
+        "observacoes": observacoes,
+        "data_retirada": str(retirada)
+
+    }).eq(
+        "numero_os",
+        numero
+    ).execute()
+
+
 # ===========================
 # REPAROS EM ANDAMENTO
 # ===========================
@@ -106,8 +151,13 @@ def reparos_em_andamento():
 
 def entregar_os(numero):
 
-    supabase.table("ordens_servico").update(
-        {"status": "Entregue"}
-    ).eq(
-        "numero_os", numero
+    supabase.table("ordens_servico").update({
+
+        "status": "Entregue"
+
+    }).eq(
+        "numero_os",
+        numero
     ).execute()
+
+    return True
