@@ -29,7 +29,7 @@ if st.button("📋 Ordem de Serviço", use_container_width=True):
     st.switch_page("pages/novo_reparo.py")
 
 if st.button("🔎 Pesquisar Reparo", use_container_width=True):
-    st.switch_page("pages/pesquisar_reparo.py")
+    st.switch_page("pages/pesquisar_os.py")
 
 if st.button("🛠️ Reparos em Andamento", use_container_width=True):
     st.switch_page("pages/reparos_andamento.py")
