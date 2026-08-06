@@ -10,8 +10,13 @@ import streamlit as st
 # CONFIGURAÇÃO
 # ======================================
 
-SUPABASE_URL = st.secrets["SUPABASE_URL"].rstrip("/")
-SUPABASE_SERVICE_KEY = st.secrets["SUPABASE_SERVICE_KEY"]
+SUPABASE_URL = str(
+    st.secrets["SUPABASE_URL"]
+).strip().rstrip("/")
+
+SUPABASE_SERVICE_KEY = str(
+    st.secrets["SUPABASE_SERVICE_KEY"]
+).strip()
 
 BUCKET = "os-fotos"
 
@@ -42,16 +47,23 @@ def enviar_foto(numero_os, foto):
         f"{caminho}"
     )
 
+    cabecalhos = {
+        "Authorization": str(
+            f"Bearer {SUPABASE_SERVICE_KEY}"
+        ),
+        "apikey": str(
+            SUPABASE_SERVICE_KEY
+        ),
+        "Content-Type": str(
+            "image/jpeg"
+        )
+    }
+
     requisicao = urllib.request.Request(
-        url=url,
+        url=str(url),
         data=conteudo,
-        method="POST",
-        headers={
-            "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}",
-            "apikey": SUPABASE_SERVICE_KEY,
-            "Content-Type": "image/jpeg",
-            "x-upsert": "false"
-        }
+        headers=cabecalhos,
+        method="POST"
     )
 
     try:
@@ -61,12 +73,14 @@ def enviar_foto(numero_os, foto):
             timeout=60
         ) as resposta:
 
-            if resposta.status not in (200, 201):
+            codigo = resposta.getcode()
+
+            if codigo not in (200, 201):
                 raise RuntimeError(
-                    f"Falha no upload. Código: {resposta.status}"
+                    f"Falha no upload. Código HTTP: {codigo}"
                 )
 
-        return True
+            return True
 
     except urllib.error.HTTPError as erro:
 
@@ -76,23 +90,28 @@ def enviar_foto(numero_os, foto):
         )
 
         try:
-            detalhe_json = json.loads(detalhe)
+
+            dados_erro = json.loads(detalhe)
+
             mensagem = (
-                detalhe_json.get("message")
-                or detalhe_json.get("error")
+                dados_erro.get("message")
+                or dados_erro.get("error")
                 or detalhe
             )
-        except json.JSONDecodeError:
+
+        except Exception:
+
             mensagem = detalhe
 
         raise RuntimeError(
-            f"Erro ao enviar a foto: {mensagem}"
+            f"Erro do Supabase Storage: {mensagem}"
         ) from erro
 
     except urllib.error.URLError as erro:
 
         raise RuntimeError(
-            f"Não foi possível conectar ao Storage: {erro.reason}"
+            f"Não foi possível conectar ao Supabase: "
+            f"{erro.reason}"
         ) from erro
 
 
