@@ -21,16 +21,10 @@ if "proxima_os" not in st.session_state:
 
 if st.session_state.get("os_salva", False):
 
-    if st.session_state.get("foto_salva", False):
-        st.success(
-            f"✅ Nota e foto salvas com sucesso!\n\n"
-            f"Ordem de Serviço Nº {st.session_state.numero_os}"
-        )
-    else:
-        st.success(
-            f"✅ Nota salva com sucesso!\n\n"
-            f"Ordem de Serviço Nº {st.session_state.numero_os}"
-        )
+    st.success(
+        f"✅ Nota e foto salvas com sucesso!\n\n"
+        f"Ordem de Serviço Nº {st.session_state.numero_os}"
+    )
 
     if st.button(
         "OK",
@@ -99,6 +93,7 @@ foto = st.camera_input(
 )
 
 if foto is not None:
+
     st.image(
         foto,
         caption="Foto capturada",
@@ -121,11 +116,13 @@ with col1:
     ):
 
         if modelo.strip() == "" or cliente.strip() == "":
+
             st.warning(
                 "Preencha o modelo e o nome do cliente."
             )
 
         elif foto is None:
+
             st.warning(
                 "Tire uma foto do aparelho antes de salvar."
             )
@@ -144,31 +141,15 @@ with col1:
                     observacoes
                 )
 
-                try:
+                enviar_foto(
+                    numero,
+                    foto
+                )
 
-                    resultado_foto = enviar_foto(
-                        numero,
-                        foto
-                    )
+                st.session_state.numero_os = numero
+                st.session_state.os_salva = True
 
-                    if resultado_foto is not True:
-                        raise RuntimeError(
-                            f"Resposta inesperada do envio: {resultado_foto}"
-                        )
-
-                    st.session_state.numero_os = numero
-                    st.session_state.foto_salva = True
-                    st.session_state.os_salva = True
-
-                    st.rerun()
-
-                except Exception as erro_foto:
-
-                    st.error(
-                        f"A OS Nº {numero} foi salva, "
-                        f"mas a foto não foi enviada.\n\n"
-                        f"Erro: {erro_foto}"
-                    )
+                st.rerun()
 
             except Exception as erro:
 
