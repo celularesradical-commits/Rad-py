@@ -1,6 +1,5 @@
 import streamlit as st
 
-from ai_client import AIOnlineClient
 from panic_parser import extrair_resumo
 
 st.set_page_config(
@@ -12,7 +11,7 @@ st.set_page_config(
 st.title("📱 Analisador de Panic Full")
 
 st.write(
-    "Selecione um arquivo Panic Full (.ips) para identificar o hardware responsável pela reinicialização."
+    "Selecione um arquivo Panic Full (.ips)."
 )
 
 arquivo = st.file_uploader(
@@ -42,22 +41,20 @@ if arquivo is not None:
                 )
 
                 if not resumo.strip():
+
                     st.error(
                         "Não foi possível extrair informações do Panic Full."
                     )
+
                     st.stop()
 
-                ia = AIOnlineClient()
+                st.success("Resumo técnico gerado com sucesso!")
 
-                with st.spinner("Consultando Gemini..."):
-
-                    resposta = ia.analisar_panic(
-                        resumo
-                    )
-
-                st.success("Análise concluída!")
-
-                st.markdown(resposta)
+                st.text_area(
+                    "Resumo Técnico",
+                    resumo,
+                    height=600
+                )
 
             except Exception as erro:
 
