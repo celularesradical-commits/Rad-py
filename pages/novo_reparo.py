@@ -54,7 +54,7 @@ defeito = st.text_area(
 
 valor = st.number_input(
     "💰 Valor do Reparo",
-    min_value=0.0,
+    min_value=1.0,
     format="%.2f"
 )
 
