@@ -7,26 +7,52 @@ st.set_page_config(
     layout="centered"
 )
 
-# Verifica se existe uma OS selecionada
+# ===========================
+# VERIFICA SE EXISTE UMA OS
+# ===========================
+
 if "os_editar" not in st.session_state:
+
     st.error("Nenhuma Ordem de Serviço selecionada.")
-    if st.button("⬅️ Voltar", use_container_width=True):
+
+    if st.button(
+        "⬅️ Voltar",
+        use_container_width=True
+    ):
         st.switch_page("pages/pesquisar_reparo.py")
+
     st.stop()
 
-numero = st.session_state.os_editar
+numero = st.session_state["os_editar"]
 
 os = buscar_os(numero)
 
 if os is None:
+
     st.error("Ordem de Serviço não encontrada.")
+
+    if st.button(
+        "⬅️ Voltar",
+        use_container_width=True
+    ):
+        st.session_state.pop("os_editar", None)
+        st.switch_page("pages/pesquisar_reparo.py")
+
     st.stop()
+
+# ===========================
+# TÍTULO
+# ===========================
 
 st.title("✏️ Editar Ordem de Serviço")
 
+# ===========================
+# CAMPOS
+# ===========================
+
 st.text_input(
     "🆔 Número da OS",
-    value=os["numero_os"],
+    value=str(os["numero_os"]),
     disabled=True
 )
 
@@ -63,10 +89,7 @@ valor = st.number_input(
 
 retirada = st.date_input(
     "📅 Data Prevista de Retirada",
-    value=st.session_state.get(
-        "data_retirada",
-        os["data_retirada"]
-    )
+    value=os["data_retirada"]
 )
 
 observacoes = st.text_area(
@@ -78,6 +101,10 @@ observacoes = st.text_area(
 st.divider()
 
 col1, col2 = st.columns(2)
+
+# ===========================
+# SALVAR
+# ===========================
 
 with col1:
 
@@ -93,7 +120,15 @@ with col1:
             retirada
         )
 
+        st.session_state.pop("os_editar", None)
+
         st.success("Alterações salvas com sucesso!")
+
+        st.switch_page("pages/pesquisar_reparo.py")
+
+# ===========================
+# VOLTAR
+# ===========================
 
 with col2:
 
@@ -101,4 +136,7 @@ with col2:
         "⬅️ Voltar",
         use_container_width=True
     ):
+
+        st.session_state.pop("os_editar", None)
+
         st.switch_page("pages/pesquisar_reparo.py")
