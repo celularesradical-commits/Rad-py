@@ -2,7 +2,7 @@ import streamlit as st
 from database import buscar_os, editar_os
 
 st.set_page_config(
-    page_title="Editar Reparo",
+    page_title="Editar Ordem de Serviço",
     page_icon="✏️",
     layout="centered"
 )
@@ -19,7 +19,7 @@ if "os_editar" not in st.session_state:
         "⬅️ Voltar",
         use_container_width=True
     ):
-        st.switch_page("pages/pesquisar_reparo.py")
+        st.switch_page("pages/pesquisar_os.py")
 
     st.stop()
 
@@ -36,7 +36,7 @@ if os is None:
         use_container_width=True
     ):
         st.session_state.pop("os_editar", None)
-        st.switch_page("pages/pesquisar_reparo.py")
+        st.switch_page("pages/pesquisar_os.py")
 
     st.stop()
 
@@ -124,7 +124,7 @@ with col1:
 
         st.success("Alterações salvas com sucesso!")
 
-        st.switch_page("pages/pesquisar_reparo.py")
+        st.switch_page("pages/pesquisar_os.py")
 
 # ===========================
 # VOLTAR
@@ -139,4 +139,4 @@ with col2:
 
         st.session_state.pop("os_editar", None)
 
-        st.switch_page("pages/pesquisar_reparo.py")
+        st.switch_page("pages/pesquisar_os.py")
