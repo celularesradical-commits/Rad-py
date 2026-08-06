@@ -67,6 +67,9 @@ if st.button("🔍 Pesquisar Películas", use_container_width=True):
 if st.button(f"📅 Agenda ({agenda_hoje})", use_container_width=True):
     st.switch_page("pages/agenda.py")
 
+if st.button("📱 Analisar Panic Full", use_container_width=True):
+    st.switch_page("pages/panic_full.py")
+    
 if st.button("📦 Estoque", use_container_width=True):
     st.switch_page("pages/estoque.py")
 
