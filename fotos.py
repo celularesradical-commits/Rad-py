@@ -8,7 +8,7 @@ from supabase import create_client
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_SERVICE_KEY = st.secrets["SUPABASE_SERVICE_KEY"]
 
-supabase = create_client(
+supabase_fotos = create_client(
     SUPABASE_URL,
     SUPABASE_SERVICE_KEY
 )
@@ -25,15 +25,22 @@ def enviar_foto(numero_os, foto):
     if foto is None:
         raise ValueError("Nenhuma foto foi recebida.")
 
-    nome_arquivo = f"{numero_os}.jpg"
+    nome_arquivo = f"{int(numero_os)}.jpg"
+    conteudo = foto.getvalue()
 
-    resposta = supabase.storage.from_(BUCKET).upload(
-        path=nome_arquivo,
-        file=foto.getvalue(),
-        file_options={
-            "content-type": "image/jpeg",
-            "upsert": "true"
-        }
+    if not conteudo:
+        raise ValueError("A foto capturada está vazia.")
+
+    resposta = (
+        supabase_fotos.storage
+        .from_(BUCKET)
+        .upload(
+            path=nome_arquivo,
+            file=conteudo,
+            file_options={
+                "content-type": "image/jpeg"
+            }
+        )
     )
 
     return resposta
@@ -45,8 +52,10 @@ def enviar_foto(numero_os, foto):
 
 def obter_url_foto(numero_os):
 
-    nome_arquivo = f"{numero_os}.jpg"
+    nome_arquivo = f"{int(numero_os)}.jpg"
 
-    return supabase.storage.from_(BUCKET).get_public_url(
-        nome_arquivo
+    return (
+        supabase_fotos.storage
+        .from_(BUCKET)
+        .get_public_url(nome_arquivo)
     )
