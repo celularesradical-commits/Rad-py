@@ -1,5 +1,5 @@
 import streamlit as st
-from database import salvar_os
+from database import salvar_os, gerar_numero_os
 
 st.set_page_config(
     page_title="Novo Reparo",
@@ -8,43 +8,40 @@ st.set_page_config(
 )
 
 # -------------------------
-# Estado da página
+# Número da próxima OS
 # -------------------------
 
-if "os_salva" not in st.session_state:
-    st.session_state.os_salva = False
-
-if "numero_os" not in st.session_state:
-    st.session_state.numero_os = None
-
+if "proxima_os" not in st.session_state:
+    st.session_state.proxima_os = gerar_numero_os()
 
 # -------------------------
 # Após salvar
 # -------------------------
 
-if st.session_state.os_salva:
+if st.session_state.get("os_salva", False):
 
     st.success(
         f"✅ Nota salva com sucesso!\n\n"
         f"Ordem de Serviço Nº {st.session_state.numero_os}"
     )
 
-    if st.button(
-        "OK",
-        use_container_width=True
-    ):
-        st.session_state.os_salva = False
-        st.session_state.numero_os = None
+    if st.button("OK", use_container_width=True):
+        st.session_state.clear()
         st.switch_page("app.py")
 
     st.stop()
 
-
 # -------------------------
-# Tela principal
+# Tela
 # -------------------------
 
 st.title("🔧 Novo Reparo")
+
+st.text_input(
+    "📄 Número da Ordem de Serviço",
+    value=str(st.session_state.proxima_os),
+    disabled=True
+)
 
 modelo = st.text_input(
     "📱 Modelo do Celular"
@@ -58,7 +55,6 @@ defeito = st.text_area(
 valor = st.number_input(
     "💰 Valor do Reparo",
     min_value=0.0,
-    step=1.0,
     format="%.2f"
 )
 
@@ -67,15 +63,15 @@ cliente = st.text_input(
 )
 
 contato = st.text_input(
-    "📞 Contato do Cliente"
+    "📞 Contato"
 )
 
 data_retirada = st.date_input(
-    "📅 Data Prevista para Retirada"
+    "📅 Data Prevista de Retirada"
 )
 
 observacoes = st.text_area(
-    "📝 Observações Adicionais",
+    "📝 Observações",
     height=120
 )
 
@@ -93,7 +89,7 @@ with col1:
         if modelo == "" or cliente == "":
 
             st.warning(
-                "Preencha pelo menos o modelo e o nome do cliente."
+                "Preencha o modelo e o nome do cliente."
             )
 
         else:
@@ -101,13 +97,13 @@ with col1:
             try:
 
                 numero = salvar_os(
-                    modelo=modelo,
-                    defeito=defeito,
-                    valor=valor,
-                    cliente=cliente,
-                    contato=contato,
-                    retirada=data_retirada,
-                    observacoes=observacoes
+                    modelo,
+                    defeito,
+                    valor,
+                    cliente,
+                    contato,
+                    data_retirada,
+                    observacoes
                 )
 
                 st.session_state.numero_os = numero
@@ -117,10 +113,7 @@ with col1:
 
             except Exception as erro:
 
-                st.error(
-                    f"Erro ao salvar:\n\n{erro}"
-                )
-
+                st.error(str(erro))
 
 with col2:
 
