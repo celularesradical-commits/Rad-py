@@ -28,7 +28,7 @@ if arquivo is not None:
         use_container_width=True
     ):
 
-        with st.spinner("Analisando arquivo..."):
+        with st.spinner("Extraindo informações do arquivo..."):
 
             try:
 
@@ -41,11 +41,19 @@ if arquivo is not None:
                     conteudo
                 )
 
+                if not resumo.strip():
+                    st.error(
+                        "Não foi possível extrair informações do Panic Full."
+                    )
+                    st.stop()
+
                 ia = AIOnlineClient()
 
-                resposta = ia.analisar_panic(
-                    resumo
-                )
+                with st.spinner("Consultando Gemini..."):
+
+                    resposta = ia.analisar_panic(
+                        resumo
+                    )
 
                 st.success("Análise concluída!")
 
