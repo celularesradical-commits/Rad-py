@@ -1,78 +1,112 @@
-import sqlite3
-from pathlib import Path
+from supabase import create_client
+from datetime import datetime
 
-# Caminho do banco de dados
-DB_PATH = Path("radicalsystem.db")
+# ===========================
+# CONFIGURAÇÃO SUPABASE
+# ===========================
+
+SUPABASE_URL = "https://hqbdzacpolmeqicowjws.supabase.co"
+SUPABASE_KEY = "sb_publishable_UOEeboBVGq6Ysnn28YbsPg_YgBo5B4p"
+
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
-def conectar():
-    """Conecta ao banco de dados."""
-    return sqlite3.connect(DB_PATH)
+# ===========================
+# GERAR NÚMERO DA OS
+# ===========================
+
+def gerar_numero_os():
+    resposta = (
+        supabase.table("ordens_servico")
+        .select("numero_os")
+        .order("numero_os", desc=True)
+        .limit(1)
+        .execute()
+    )
+
+    if resposta.data:
+        return resposta.data[0]["numero_os"] + 1
+
+    return 5001
 
 
-def criar_banco():
-    """Cria as tabelas do sistema."""
+# ===========================
+# SALVAR ORDEM DE SERVIÇO
+# ===========================
 
-    conn = conectar()
-    cursor = conn.cursor()
+def salvar_os(
+    modelo,
+    defeito,
+    valor,
+    cliente,
+    contato,
+    retirada,
+    observacoes
+):
 
-    # Ordem de Serviço
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS ordens_servico (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            cliente TEXT NOT NULL,
-            contato TEXT,
-            modelo TEXT NOT NULL,
-            defeito TEXT,
-            valor REAL DEFAULT 0,
-            data_entrada TEXT,
-            data_retirada TEXT,
-            data_entrega TEXT,
-            observacoes TEXT,
-            status TEXT DEFAULT 'Recebido'
+    numero = gerar_numero_os()
+
+    dados = {
+        "numero_os": numero,
+        "modelo": modelo,
+        "defeito": defeito,
+        "valor": float(valor),
+        "cliente": cliente,
+        "contato": contato,
+        "data_entrada": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "data_retirada": str(retirada),
+        "observacoes": observacoes,
+        "status": "Em andamento"
+    }
+
+    supabase.table("ordens_servico").insert(dados).execute()
+
+    return numero
+
+
+# ===========================
+# PESQUISAR ORDEM
+# ===========================
+
+def pesquisar_os(texto):
+
+    resposta = (
+        supabase.table("ordens_servico")
+        .select("*")
+        .or_(
+            f"cliente.ilike.%{texto}%,modelo.ilike.%{texto}%,contato.ilike.%{texto}%"
         )
-    """)
+        .execute()
+    )
 
-    # Agenda
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS agenda (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            os_id INTEGER,
-            cliente TEXT,
-            modelo TEXT,
-            data TEXT,
-            concluido INTEGER DEFAULT 0
-        )
-    """)
-
-    # Estoque
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS estoque (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            produto TEXT,
-            quantidade INTEGER DEFAULT 0,
-            valor REAL DEFAULT 0
-        )
-    """)
-
-    # Configurações
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS configuracoes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            empresa TEXT,
-            telefone TEXT,
-            endereco TEXT,
-            garantia TEXT
-        )
-    """)
-
-    conn.commit()
-    conn.close()
+    return resposta.data
 
 
-# Cria o banco automaticamente
-criar_banco()
+# ===========================
+# REPAROS EM ANDAMENTO
+# ===========================
+
+def reparos_em_andamento():
+
+    resposta = (
+        supabase.table("ordens_servico")
+        .select("*")
+        .eq("status", "Em andamento")
+        .order("numero_os")
+        .execute()
+    )
+
+    return resposta.data
 
 
-if __name__ == "__main__":
-    print("Banco de dados criado com sucesso.")
+# ===========================
+# ENTREGAR APARELHO
+# ===========================
+
+def entregar_os(numero):
+
+    supabase.table("ordens_servico").update(
+        {"status": "Entregue"}
+    ).eq(
+        "numero_os", numero
+    ).execute()
