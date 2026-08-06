@@ -1,4 +1,6 @@
 import streamlit as st
+from datetime import date
+from database import supabase
 
 # ============================================
 # Configuração da página
@@ -9,6 +11,28 @@ st.set_page_config(
     page_icon="📱",
     layout="centered"
 )
+
+# ============================================
+# Contador da Agenda
+# ============================================
+
+hoje = date.today().isoformat()
+
+try:
+
+    resposta = (
+        supabase.table("ordens_servico")
+        .select("numero_os")
+        .eq("status", "Em andamento")
+        .eq("data_retirada", hoje)
+        .execute()
+    )
+
+    agenda_hoje = len(resposta.data)
+
+except:
+
+    agenda_hoje = 0
 
 # ============================================
 # Cabeçalho
@@ -40,7 +64,7 @@ if st.button("✅ Entregues", use_container_width=True):
 if st.button("🔍 Pesquisar Películas", use_container_width=True):
     st.switch_page("pages/peliculas.py")
 
-if st.button("📅 Agenda", use_container_width=True):
+if st.button(f"📅 Agenda ({agenda_hoje})", use_container_width=True):
     st.switch_page("pages/agenda.py")
 
 if st.button("📦 Estoque", use_container_width=True):
