@@ -47,9 +47,7 @@ st.text_input(
     disabled=True
 )
 
-modelo = st.text_input(
-    "📱 Modelo do Celular"
-)
+modelo = st.text_input("📱 Modelo do Celular")
 
 defeito = st.text_area(
     "🔧 Defeito Identificado",
@@ -63,13 +61,9 @@ valor = st.number_input(
     format="%.0f"
 )
 
-cliente = st.text_input(
-    "👤 Nome do Cliente"
-)
+cliente = st.text_input("👤 Nome do Cliente")
 
-contato = st.text_input(
-    "📞 Contato"
-)
+contato = st.text_input("📞 Contato")
 
 data_retirada = st.date_input(
     "📅 Data Prevista de Retirada"
@@ -93,7 +87,6 @@ foto = st.camera_input(
 )
 
 if foto is not None:
-
     st.image(
         foto,
         caption="Foto capturada",
@@ -135,18 +128,21 @@ with col1:
                     observacoes
                 )
 
-                # -------------------------
-                # Salvar foto
-                # -------------------------
+                st.info(f"Número da OS: {numero}")
 
-                if foto is not None:
+                if foto is None:
 
-                    try:
-                        enviar_foto(numero, foto)
-                    except Exception as erro:
-                        st.warning(
-                            f"OS salva, porém a foto não foi enviada.\n\n{erro}"
-                        )
+                    st.warning("Nenhuma foto capturada.")
+
+                else:
+
+                    st.info("Chamando enviar_foto()...")
+
+                    resultado = enviar_foto(numero, foto)
+
+                    st.info(f"Resultado: {resultado}")
+
+                    st.success("Retornou de enviar_foto().")
 
                 st.session_state.numero_os = numero
                 st.session_state.os_salva = True
@@ -155,7 +151,7 @@ with col1:
 
             except Exception as erro:
 
-                st.error(str(erro))
+                st.error(f"ERRO:\n\n{erro}")
 
 with col2:
 
