@@ -1,5 +1,6 @@
 import streamlit as st
-from datetime import date
+from datetime import date, datetime
+from zoneinfo import ZoneInfo
 
 from database import supabase
 from fotos import obter_url_foto
@@ -38,16 +39,21 @@ def entregar_os(numero_os):
 
     try:
 
+        momento_entrega = datetime.now(
+            ZoneInfo("America/Sao_Paulo")
+        ).isoformat()
+
         (
             supabase.table("ordens_servico")
             .update({
-                "status": "Entregue"
+                "status": "Entregue",
+                "data_entrega": momento_entrega
             })
             .eq("numero_os", numero_os)
             .execute()
         )
 
-        st.success(
+        st.session_state["mensagem_agenda"] = (
             f"OS Nº {numero_os} entregue com sucesso."
         )
 
@@ -58,6 +64,17 @@ def entregar_os(numero_os):
         st.error(
             f"Erro ao entregar a OS: {erro}"
         )
+
+
+# ===========================
+# MENSAGEM DE SUCESSO
+# ===========================
+
+if "mensagem_agenda" in st.session_state:
+
+    st.success(
+        st.session_state.pop("mensagem_agenda")
+    )
 
 
 # ===========================
@@ -75,22 +92,31 @@ def exibir_os(ordem, tipo):
         )
 
         st.write(
-            f"**👤 Cliente:** {ordem['cliente']}"
+            f"**👤 Cliente:** "
+            f"{ordem.get('cliente', '')}"
         )
 
         st.write(
-            f"**📱 Modelo:** {ordem['modelo']}"
+            f"**📱 Modelo:** "
+            f"{ordem.get('modelo', '')}"
         )
 
         st.write(
-            f"**📅 Retirada:** {ordem['data_retirada']}"
+            f"**📅 Retirada:** "
+            f"{ordem.get('data_retirada', '')}"
         )
 
         # ===========================
         # FOTO DA OS
         # ===========================
 
-        url_foto = obter_url_foto(numero_os)
+        try:
+
+            url_foto = obter_url_foto(numero_os)
+
+        except Exception:
+
+            url_foto = None
 
         if url_foto:
 
@@ -181,7 +207,9 @@ for ordem in lista:
     if not data_retirada:
         continue
 
-    data_retirada = str(data_retirada)
+    data_retirada = str(
+        data_retirada
+    )[:10]
 
     if data_retirada < hoje:
 
