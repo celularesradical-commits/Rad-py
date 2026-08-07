@@ -1,7 +1,9 @@
 import streamlit as st
 from datetime import date
+
 from database import supabase
 from fotos import obter_url_foto
+
 
 st.set_page_config(
     page_title="Agenda",
@@ -11,20 +13,78 @@ st.set_page_config(
 
 st.title("📅 Agenda")
 
+
 # ===========================
-# FUNÇÃO PARA EXIBIR A OS
+# FILTRO
 # ===========================
 
-def exibir_os(os, tipo):
+filtro = st.segmented_control(
+    "Exibir retiradas",
+    options=[
+        "Todas",
+        "Atrasadas",
+        "Hoje",
+        "Próximas"
+    ],
+    default="Todas"
+)
 
-    numero_os = os["numero_os"]
+
+# ===========================
+# ENTREGAR APARELHO
+# ===========================
+
+def entregar_os(numero_os):
+
+    try:
+
+        (
+            supabase.table("ordens_servico")
+            .update({
+                "status": "Entregue"
+            })
+            .eq("numero_os", numero_os)
+            .execute()
+        )
+
+        st.success(
+            f"OS Nº {numero_os} entregue com sucesso."
+        )
+
+        st.rerun()
+
+    except Exception as erro:
+
+        st.error(
+            f"Erro ao entregar a OS: {erro}"
+        )
+
+
+# ===========================
+# EXIBIR ORDEM DE SERVIÇO
+# ===========================
+
+def exibir_os(ordem, tipo):
+
+    numero_os = ordem["numero_os"]
 
     with st.container(border=True):
 
-        st.write(f"**🆔 OS:** {numero_os}")
-        st.write(f"**👤 Cliente:** {os['cliente']}")
-        st.write(f"**📱 Modelo:** {os['modelo']}")
-        st.write(f"**📅 Retirada:** {os['data_retirada']}")
+        st.write(
+            f"**🆔 OS:** {numero_os}"
+        )
+
+        st.write(
+            f"**👤 Cliente:** {ordem['cliente']}"
+        )
+
+        st.write(
+            f"**📱 Modelo:** {ordem['modelo']}"
+        )
+
+        st.write(
+            f"**📅 Retirada:** {ordem['data_retirada']}"
+        )
 
         # ===========================
         # FOTO DA OS
@@ -32,21 +92,49 @@ def exibir_os(os, tipo):
 
         url_foto = obter_url_foto(numero_os)
 
-        st.image(
-            url_foto,
-            caption=f"Foto da OS Nº {numero_os}",
-            use_container_width=True
-        )
+        if url_foto:
 
-        if st.button(
-            "📄 Abrir Ordem de Serviço",
-            key=f"{tipo}_{numero_os}",
-            use_container_width=True
-        ):
+            st.image(
+                url_foto,
+                caption=f"Foto da OS Nº {numero_os}",
+                use_container_width=True
+            )
 
-            st.session_state["os_editar"] = numero_os
+        else:
 
-            st.switch_page("pages/editar_reparo.py")
+            st.info(
+                "📷 Nenhuma foto cadastrada."
+            )
+
+        # ===========================
+        # BOTÕES
+        # ===========================
+
+        coluna_abrir, coluna_entregar = st.columns(2)
+
+        with coluna_abrir:
+
+            if st.button(
+                "📄 Abrir OS",
+                key=f"abrir_{tipo}_{numero_os}",
+                use_container_width=True
+            ):
+
+                st.session_state["os_editar"] = numero_os
+
+                st.switch_page(
+                    "pages/editar_reparo.py"
+                )
+
+        with coluna_entregar:
+
+            if st.button(
+                "✅ Entregar",
+                key=f"entregar_{tipo}_{numero_os}",
+                use_container_width=True
+            ):
+
+                entregar_os(numero_os)
 
 
 # ===========================
@@ -55,86 +143,177 @@ def exibir_os(os, tipo):
 
 hoje = date.today().isoformat()
 
-resposta = (
-    supabase.table("ordens_servico")
-    .select("*")
-    .eq("status", "Em andamento")
-    .order("data_retirada")
-    .execute()
-)
+try:
 
-lista = resposta.data
+    resposta = (
+        supabase.table("ordens_servico")
+        .select("*")
+        .eq("status", "Em andamento")
+        .order("data_retirada")
+        .execute()
+    )
+
+    lista = resposta.data or []
+
+except Exception as erro:
+
+    st.error(
+        f"Erro ao carregar a agenda: {erro}"
+    )
+
+    lista = []
+
+
+# ===========================
+# SEPARAR ORDENS POR DATA
+# ===========================
 
 atrasadas = []
 hoje_lista = []
 proximas = []
 
-for os in lista:
+for ordem in lista:
 
-    data_retirada = str(os["data_retirada"])
+    data_retirada = ordem.get(
+        "data_retirada"
+    )
+
+    if not data_retirada:
+        continue
+
+    data_retirada = str(data_retirada)
 
     if data_retirada < hoje:
-        atrasadas.append(os)
+
+        atrasadas.append(ordem)
 
     elif data_retirada == hoje:
-        hoje_lista.append(os)
+
+        hoje_lista.append(ordem)
 
     else:
-        proximas.append(os)
+
+        proximas.append(ordem)
+
+
+# ===========================
+# QUANTIDADES
+# ===========================
+
+coluna_1, coluna_2, coluna_3 = st.columns(3)
+
+with coluna_1:
+
+    st.metric(
+        "🔴 Atrasadas",
+        len(atrasadas)
+    )
+
+with coluna_2:
+
+    st.metric(
+        "🟢 Hoje",
+        len(hoje_lista)
+    )
+
+with coluna_3:
+
+    st.metric(
+        "⚪ Próximas",
+        len(proximas)
+    )
+
+
+st.divider()
+
 
 # ===========================
 # ATRASADAS
 # ===========================
 
-if atrasadas:
+if filtro in ["Todas", "Atrasadas"]:
 
-    st.subheader("🔴 Atrasadas")
+    if atrasadas:
 
-    for os in atrasadas:
-        exibir_os(
-            os,
-            "atrasada"
+        st.subheader("🔴 Atrasadas")
+
+        for ordem in atrasadas:
+
+            exibir_os(
+                ordem,
+                "atrasada"
+            )
+
+    elif filtro == "Atrasadas":
+
+        st.success(
+            "Nenhuma retirada atrasada."
         )
+
 
 # ===========================
 # HOJE
 # ===========================
 
-if hoje_lista:
+if filtro in ["Todas", "Hoje"]:
 
-    st.subheader("🟢 Hoje")
+    if hoje_lista:
 
-    for os in hoje_lista:
-        exibir_os(
-            os,
-            "hoje"
+        st.subheader("🟢 Hoje")
+
+        for ordem in hoje_lista:
+
+            exibir_os(
+                ordem,
+                "hoje"
+            )
+
+    elif filtro == "Hoje":
+
+        st.success(
+            "Nenhuma retirada agendada para hoje."
         )
+
 
 # ===========================
 # PRÓXIMAS
 # ===========================
 
-if proximas:
+if filtro in ["Todas", "Próximas"]:
 
-    st.subheader("⚪ Próximas")
+    if proximas:
 
-    for os in proximas:
-        exibir_os(
-            os,
-            "proxima"
+        st.subheader("⚪ Próximas")
+
+        for ordem in proximas:
+
+            exibir_os(
+                ordem,
+                "proxima"
+            )
+
+    elif filtro == "Próximas":
+
+        st.success(
+            "Nenhuma retirada futura agendada."
         )
+
 
 # ===========================
 # SEM RETIRADAS
 # ===========================
 
 if (
-    len(atrasadas) == 0
-    and len(hoje_lista) == 0
-    and len(proximas) == 0
+    filtro == "Todas"
+    and not atrasadas
+    and not hoje_lista
+    and not proximas
 ):
 
-    st.success("Nenhuma retirada agendada.")
+    st.success(
+        "Nenhuma retirada agendada."
+    )
+
 
 # ===========================
 # VOLTAR
