@@ -70,7 +70,7 @@ def extrair_resumo(conteudo: str) -> str:
     # EXTRAÇÃO DOS CAMPOS
     # ===========================
 
-    padroes = {
+        padroes = {
         "product": [
             r'"product"\s*:\s*"([^"]+)"',
             r"\bproduct\s*[:=]\s*([^\n,}]+)",
@@ -84,7 +84,7 @@ def extrair_resumo(conteudo: str) -> str:
             r"\bos_version\s*[:=]\s*([^\n,}]+)",
         ],
         "bug_type": [
-            r'"bug_type"\s*:\s*"?([^",}\n]+)",
+            r'"bug_type"\s*:\s*"?([^",}\n]+)"?',
             r"\bbug_type\s*[:=]\s*([^\n,}]+)",
         ],
         "panicString": [
