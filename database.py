@@ -1,5 +1,7 @@
 from supabase import create_client
 from datetime import datetime
+from zoneinfo import ZoneInfo
+
 
 # ===========================
 # CONFIGURAÇÃO SUPABASE
@@ -8,7 +10,12 @@ from datetime import datetime
 SUPABASE_URL = "https://hqbdzacpolmeqicowjws.supabase.co"
 SUPABASE_KEY = "sb_publishable_UOEeboBVGq6Ysnn28YbsPg_YgBo5B4p"
 
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+supabase = 
+
+supabase = create_client(
+    SUPABASE_URL,
+    SUPABASE_KEY
+)
 
 
 # ===========================
@@ -54,13 +61,19 @@ def salvar_os(
         "valor": float(valor),
         "cliente": cliente,
         "contato": contato,
-        "data_entrada": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "data_entrada": datetime.now(
+            ZoneInfo("America/Sao_Paulo")
+        ).isoformat(),
         "data_retirada": str(retirada),
         "observacoes": observacoes,
         "status": "Em andamento"
     }
 
-    supabase.table("ordens_servico").insert(dados).execute()
+    (
+        supabase.table("ordens_servico")
+        .insert(dados)
+        .execute()
+    )
 
     return numero
 
@@ -71,13 +84,24 @@ def salvar_os(
 
 def pesquisar_os(texto):
 
-    consulta = supabase.table("ordens_servico").select("*")
+    consulta = (
+        supabase.table("ordens_servico")
+        .select("*")
+    )
 
     if texto.isdigit():
-        consulta = consulta.eq("numero_os", int(texto))
+
+        consulta = consulta.eq(
+            "numero_os",
+            int(texto)
+        )
+
     else:
+
         consulta = consulta.or_(
-            f"cliente.ilike.%{texto}%,modelo.ilike.%{texto}%,contato.ilike.%{texto}%"
+            f"cliente.ilike.%{texto}%,"
+            f"modelo.ilike.%{texto}%,"
+            f"contato.ilike.%{texto}%"
         )
 
     resposta = consulta.execute()
@@ -116,16 +140,19 @@ def editar_os(
     retirada
 ):
 
-    supabase.table("ordens_servico").update({
-
-        "valor": float(valor),
-        "observacoes": observacoes,
-        "data_retirada": str(retirada)
-
-    }).eq(
-        "numero_os",
-        numero
-    ).execute()
+    (
+        supabase.table("ordens_servico")
+        .update({
+            "valor": float(valor),
+            "observacoes": observacoes,
+            "data_retirada": str(retirada)
+        })
+        .eq(
+            "numero_os",
+            numero
+        )
+        .execute()
+    )
 
 
 # ===========================
@@ -151,13 +178,21 @@ def reparos_em_andamento():
 
 def entregar_os(numero):
 
-    supabase.table("ordens_servico").update({
+    momento_entrega = datetime.now(
+        ZoneInfo("America/Sao_Paulo")
+    ).isoformat()
 
-        "status": "Entregue"
-
-    }).eq(
-        "numero_os",
-        numero
-    ).execute()
+    (
+        supabase.table("ordens_servico")
+        .update({
+            "status": "Entregue",
+            "data_entrega": momento_entrega
+        })
+        .eq(
+            "numero_os",
+            numero
+        )
+        .execute()
+    )
 
     return True
