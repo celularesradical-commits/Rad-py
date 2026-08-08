@@ -22,6 +22,7 @@ class MainActivity : Activity() {
     private lateinit var webView: WebView
 
     private var pedidoCameraPendente: PermissionRequest? = null
+    private var acaoBluetoothPendente: String? = null
 
     private val CAMERA_PERMISSION_CODE = 1001
     private val BLUETOOTH_PERMISSION_CODE = 1002
@@ -32,7 +33,6 @@ class MainActivity : Activity() {
     private val PREFS = "radicalsystem_config"
     private val PREF_IMPRESSORA = "impressora_mac"
 
-    // UUID padrão Serial Port Profile (SPP)
     private val UUID_SPP: UUID =
         UUID.fromString(
             "00001101-0000-1000-8000-00805F9B34FB"
@@ -46,7 +46,7 @@ class MainActivity : Activity() {
         setContentView(webView)
 
         // =========================
-        // CONFIGURAÇÃO DO WEBVIEW
+        // WEBVIEW
         // =========================
 
         webView.settings.javaScriptEnabled = true
@@ -62,39 +62,27 @@ class MainActivity : Activity() {
                 request: WebResourceRequest?
             ): Boolean {
 
-                val url = request?.url?.toString()
+                val uri = request?.url
                     ?: return false
 
-                // -------------------------
-                // Configurar impressora
-                // -------------------------
+                if (uri.scheme == "radicalsystem") {
 
-                if (
-                    url.contains(
-                        "configurar_impressora=1"
-                    )
-                ) {
+                    when (uri.host) {
 
-                    abrirConfiguracaoImpressora()
+                        "configurar-impressora" -> {
+                            abrirConfiguracaoImpressora()
+                        }
 
-                    limparComandoUrl()
+                        "testar-impressao" -> {
+                            testarImpressao()
+                        }
 
-                    return true
-                }
-
-                // -------------------------
-                // Testar impressão
-                // -------------------------
-
-                if (
-                    url.contains(
-                        "testar_impressao=1"
-                    )
-                ) {
-
-                    testarImpressao()
-
-                    limparComandoUrl()
+                        else -> {
+                            mostrarToast(
+                                "Comando não reconhecido."
+                            )
+                        }
+                    }
 
                     return true
                 }
@@ -171,26 +159,15 @@ class MainActivity : Activity() {
     }
 
     // =========================
-    // LIMPAR COMANDO DA URL
-    // =========================
-
-    private fun limparComandoUrl() {
-
-        runOnUiThread {
-
-            webView.loadUrl(
-                "https://radicalsystem.streamlit.app/configuracoes"
-            )
-        }
-    }
-
-    // =========================
     // CONFIGURAR IMPRESSORA
     // =========================
 
     private fun abrirConfiguracaoImpressora() {
 
         if (!temPermissaoBluetooth()) {
+
+            acaoBluetoothPendente =
+                "configurar"
 
             pedirPermissaoBluetooth()
 
@@ -236,7 +213,7 @@ class MainActivity : Activity() {
     }
 
     // =========================
-    // LISTAR IMPRESSORAS
+    // LISTAR DISPOSITIVOS PAREADOS
     // =========================
 
     private fun mostrarImpressorasPareadas() {
@@ -361,6 +338,9 @@ class MainActivity : Activity() {
 
         if (!temPermissaoBluetooth()) {
 
+            acaoBluetoothPendente =
+                "testar"
+
             pedirPermissaoBluetooth()
 
             return
@@ -391,6 +371,9 @@ class MainActivity : Activity() {
 
         thread {
 
+            var socket:
+                android.bluetooth.BluetoothSocket? = null
+
             try {
 
                 val bluetoothManager =
@@ -417,7 +400,7 @@ class MainActivity : Activity() {
                 bluetoothAdapter
                     .cancelDiscovery()
 
-                val socket =
+                socket =
                     dispositivo
                         .createRfcommSocketToServiceRecord(
                             UUID_SPP
@@ -460,9 +443,6 @@ Impressora configurada!
 
                 Thread.sleep(300)
 
-                saida.close()
-                socket.close()
-
                 mostrarToast(
                     "Impressão enviada!"
                 )
@@ -472,6 +452,13 @@ Impressora configurada!
                 mostrarToast(
                     "Erro ao imprimir: ${erro.message}"
                 )
+
+            } finally {
+
+                try {
+                    socket?.close()
+                } catch (_: Exception) {
+                }
             }
         }
     }
@@ -558,7 +545,18 @@ Impressora configurada!
                 PackageManager.PERMISSION_GRANTED
             ) {
 
-                mostrarImpressorasPareadas()
+                when (
+                    acaoBluetoothPendente
+                ) {
+
+                    "configurar" -> {
+                        mostrarImpressorasPareadas()
+                    }
+
+                    "testar" -> {
+                        testarImpressao()
+                    }
+                }
 
             } else {
 
@@ -566,6 +564,8 @@ Impressora configurada!
                     "Permissão Bluetooth necessária."
                 )
             }
+
+            acaoBluetoothPendente = null
         }
     }
 
