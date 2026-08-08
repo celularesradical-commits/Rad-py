@@ -10,8 +10,6 @@ from zoneinfo import ZoneInfo
 SUPABASE_URL = "https://hqbdzacpolmeqicowjws.supabase.co"
 SUPABASE_KEY = "sb_publishable_UOEeboBVGq6Ysnn28YbsPg_YgBo5B4p"
 
-supabase = 
-
 supabase = create_client(
     SUPABASE_URL,
     SUPABASE_KEY
