@@ -56,14 +56,18 @@ if st.button(
     use_container_width=True
 ):
     st.query_params["configurar_impressora"] = "1"
+    st.rerun()
 
-    st.info(
-        "Abrindo configuração da impressora..."
-    )
+if st.button(
+    "🧾 Testar impressão",
+    use_container_width=True
+):
+    st.query_params["testar_impressao"] = "1"
+    st.rerun()
 
 st.caption(
-    "A impressora será configurada individualmente "
-    "em cada celular Android."
+    "A impressora é configurada individualmente "
+    "em cada aparelho Android."
 )
 
 st.divider()
@@ -74,8 +78,9 @@ st.divider()
 
 st.subheader("👤 Conta")
 
-st.write(f"**Perfil:** {perfil_nome}")
-st.write(f"**Loja atual:** {perfil_loja}")
+st.caption(
+    f"{perfil_nome} • {perfil_loja}"
+)
 
 if st.button(
     "🚪 Sair do perfil",
