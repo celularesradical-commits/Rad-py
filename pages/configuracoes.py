@@ -34,12 +34,36 @@ perfil_loja = st.session_state.get(
 
 st.title("⚙️ Configurações")
 
-st.write(
-    f"👤 **Perfil:** {perfil_nome}"
+st.caption(
+    f"👤 {perfil_nome} • 🏪 {perfil_loja}"
 )
 
+st.divider()
+
+# ============================================
+# Impressora
+# ============================================
+
+st.subheader("🖨️ Impressora")
+
 st.write(
-    f"🏪 **Loja:** {perfil_loja}"
+    "Configure a impressora térmica Bluetooth "
+    "utilizada neste aparelho."
+)
+
+if st.button(
+    "🔵 Configurar impressora Bluetooth",
+    use_container_width=True
+):
+    st.query_params["configurar_impressora"] = "1"
+
+    st.info(
+        "Abrindo configuração da impressora..."
+    )
+
+st.caption(
+    "A impressora será configurada individualmente "
+    "em cada celular Android."
 )
 
 st.divider()
@@ -49,6 +73,9 @@ st.divider()
 # ============================================
 
 st.subheader("👤 Conta")
+
+st.write(f"**Perfil:** {perfil_nome}")
+st.write(f"**Loja atual:** {perfil_loja}")
 
 if st.button(
     "🚪 Sair do perfil",
