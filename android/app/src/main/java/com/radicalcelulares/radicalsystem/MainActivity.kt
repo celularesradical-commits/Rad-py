@@ -1,171 +1,46 @@
-package com.radicalcelulares.radicalsystem
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-import android.Manifest
-import android.app.Activity
-import android.content.pm.PackageManager
-import android.os.Bundle
-import android.webkit.PermissionRequest
-import android.webkit.WebChromeClient
-import android.webkit.WebView
-import android.webkit.WebViewClient
+    <!-- Internet -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
-class MainActivity : Activity() {
+    <!-- Câmera -->
+    <uses-permission android:name="android.permission.CAMERA" />
 
-    private lateinit var webView: WebView
+    <!-- Bluetooth Android 11 ou inferior -->
+    <uses-permission
+        android:name="android.permission.BLUETOOTH"
+        android:maxSdkVersion="30" />
 
-    private var pedidoCameraPendente: PermissionRequest? = null
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_ADMIN"
+        android:maxSdkVersion="30" />
 
-    private val CAMERA_PERMISSION_CODE = 1001
+    <!-- Bluetooth Android 12 ou superior -->
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_CONNECT" />
 
-    private val RADICAL_URL =
-        "https://radicalsystem.streamlit.app"
+    <uses-feature
+        android:name="android.hardware.bluetooth"
+        android:required="false" />
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    <application
+        android:allowBackup="true"
+        android:label="RadicalSystem"
+        android:supportsRtl="true">
 
-        webView = WebView(this)
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
 
-        setContentView(webView)
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
-        // =========================
-        // CONFIGURAÇÃO DO WEBVIEW
-        // =========================
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
 
-        webView.settings.javaScriptEnabled = true
-        webView.settings.domStorageEnabled = true
+        </activity>
 
-        webView.settings.allowFileAccess = false
-        webView.settings.allowContentAccess = false
+    </application>
 
-        webView.webViewClient = WebViewClient()
-
-        // =========================
-        // CÂMERA
-        // =========================
-
-        webView.webChromeClient = object : WebChromeClient() {
-
-            override fun onPermissionRequest(
-                request: PermissionRequest
-            ) {
-
-                runOnUiThread {
-
-                    val origemPermitida =
-                        request.origin.host ==
-                        "radicalsystem.streamlit.app"
-
-                    val pediuCamera =
-                        request.resources.contains(
-                            PermissionRequest.RESOURCE_VIDEO_CAPTURE
-                        )
-
-                    if (!origemPermitida || !pediuCamera) {
-                        request.deny()
-                        return@runOnUiThread
-                    }
-
-                    if (
-                        checkSelfPermission(
-                            Manifest.permission.CAMERA
-                        ) == PackageManager.PERMISSION_GRANTED
-                    ) {
-
-                        request.grant(
-                            arrayOf(
-                                PermissionRequest.RESOURCE_VIDEO_CAPTURE
-                            )
-                        )
-
-                    } else {
-
-                        pedidoCameraPendente = request
-
-                        requestPermissions(
-                            arrayOf(
-                                Manifest.permission.CAMERA
-                            ),
-                            CAMERA_PERMISSION_CODE
-                        )
-                    }
-                }
-            }
-        }
-
-        // =========================
-        // ABRIR RADICALSYSTEM
-        // =========================
-
-        if (savedInstanceState == null) {
-            webView.loadUrl(RADICAL_URL)
-        }
-    }
-
-    // =========================
-    // RESPOSTA DA PERMISSÃO
-    // =========================
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-
-        super.onRequestPermissionsResult(
-            requestCode,
-            permissions,
-            grantResults
-        )
-
-        if (requestCode == CAMERA_PERMISSION_CODE) {
-
-            val pedido = pedidoCameraPendente
-
-            if (
-                grantResults.isNotEmpty() &&
-                grantResults[0] ==
-                PackageManager.PERMISSION_GRANTED
-            ) {
-
-                pedido?.grant(
-                    arrayOf(
-                        PermissionRequest.RESOURCE_VIDEO_CAPTURE
-                    )
-                )
-
-            } else {
-
-                pedido?.deny()
-            }
-
-            pedidoCameraPendente = null
-        }
-    }
-
-    // =========================
-    // BOTÃO VOLTAR DO ANDROID
-    // =========================
-
-    @Deprecated("Deprecated in Java")
-    override fun onBackPressed() {
-
-        if (webView.canGoBack()) {
-            webView.goBack()
-        } else {
-            super.onBackPressed()
-        }
-    }
-
-    // =========================
-    // SALVAR ESTADO
-    // =========================
-
-    override fun onSaveInstanceState(
-        outState: Bundle
-    ) {
-
-        webView.saveState(outState)
-
-        super.onSaveInstanceState(outState)
-    }
-}
+</manifest>
