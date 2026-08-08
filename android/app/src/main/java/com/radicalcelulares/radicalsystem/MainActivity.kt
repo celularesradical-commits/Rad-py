@@ -6,6 +6,7 @@ import android.app.AlertDialog
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.webkit.PermissionRequest
@@ -42,11 +43,10 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
 
         webView = WebView(this)
-
         setContentView(webView)
 
         // =========================
-        // WEBVIEW
+        // CONFIGURAÇÕES WEBVIEW
         // =========================
 
         webView.settings.javaScriptEnabled = true
@@ -55,99 +55,108 @@ class MainActivity : Activity() {
         webView.settings.allowFileAccess = false
         webView.settings.allowContentAccess = false
 
-        webView.webViewClient = object : WebViewClient() {
+        webView.settings.javaScriptCanOpenWindowsAutomatically = true
 
-            override fun shouldOverrideUrlLoading(
-                view: WebView?,
-                request: WebResourceRequest?
-            ): Boolean {
+        // =========================
+        // INTERCEPTAR COMANDOS
+        // =========================
 
-                val uri = request?.url
-                    ?: return false
+        webView.webViewClient =
+            object : WebViewClient() {
 
-                if (uri.scheme == "radicalsystem") {
+                // Android moderno
+                override fun shouldOverrideUrlLoading(
+                    view: WebView?,
+                    request: WebResourceRequest?
+                ): Boolean {
 
-                    when (uri.host) {
+                    val url =
+                        request?.url?.toString()
+                            ?: return false
 
-                        "configurar-impressora" -> {
-                            abrirConfiguracaoImpressora()
-                        }
-
-                        "testar-impressao" -> {
-                            testarImpressao()
-                        }
-
-                        else -> {
-                            mostrarToast(
-                                "Comando não reconhecido."
-                            )
-                        }
-                    }
-
-                    return true
+                    return processarUrl(url)
                 }
 
-                return false
+                // Compatibilidade / links disparados pelo Streamlit
+                @Deprecated("Deprecated in Java")
+                override fun shouldOverrideUrlLoading(
+                    view: WebView?,
+                    url: String?
+                ): Boolean {
+
+                    if (url.isNullOrBlank()) {
+                        return false
+                    }
+
+                    return processarUrl(url)
+                }
             }
-        }
 
         // =========================
         // CÂMERA
         // =========================
 
-        webView.webChromeClient = object : WebChromeClient() {
+        webView.webChromeClient =
+            object : WebChromeClient() {
 
-            override fun onPermissionRequest(
-                request: PermissionRequest
-            ) {
+                override fun onPermissionRequest(
+                    request: PermissionRequest
+                ) {
 
-                runOnUiThread {
+                    runOnUiThread {
 
-                    val origemPermitida =
-                        request.origin.host ==
-                        "radicalsystem.streamlit.app"
+                        val origemPermitida =
+                            request.origin.host ==
+                                    "radicalsystem.streamlit.app"
 
-                    val pediuCamera =
-                        request.resources.contains(
-                            PermissionRequest.RESOURCE_VIDEO_CAPTURE
-                        )
-
-                    if (!origemPermitida || !pediuCamera) {
-
-                        request.deny()
-
-                        return@runOnUiThread
-                    }
-
-                    if (
-                        checkSelfPermission(
-                            Manifest.permission.CAMERA
-                        ) == PackageManager.PERMISSION_GRANTED
-                    ) {
-
-                        request.grant(
-                            arrayOf(
-                                PermissionRequest.RESOURCE_VIDEO_CAPTURE
+                        val pediuCamera =
+                            request.resources.contains(
+                                PermissionRequest
+                                    .RESOURCE_VIDEO_CAPTURE
                             )
-                        )
 
-                    } else {
+                        if (
+                            !origemPermitida ||
+                            !pediuCamera
+                        ) {
 
-                        pedidoCameraPendente = request
+                            request.deny()
 
-                        requestPermissions(
-                            arrayOf(
+                            return@runOnUiThread
+                        }
+
+                        if (
+                            checkSelfPermission(
                                 Manifest.permission.CAMERA
-                            ),
-                            CAMERA_PERMISSION_CODE
-                        )
+                            ) ==
+                            PackageManager.PERMISSION_GRANTED
+                        ) {
+
+                            request.grant(
+                                arrayOf(
+                                    PermissionRequest
+                                        .RESOURCE_VIDEO_CAPTURE
+                                )
+                            )
+
+                        } else {
+
+                            pedidoCameraPendente =
+                                request
+
+                            requestPermissions(
+                                arrayOf(
+                                    Manifest.permission.CAMERA
+                                ),
+                                CAMERA_PERMISSION_CODE
+                            )
+                        }
                     }
                 }
             }
-        }
 
         // =========================
-        // ABRIR RADICALSYSTEM
+        // ABRIR SISTEMA
         // =========================
 
         if (savedInstanceState == null) {
@@ -155,7 +164,96 @@ class MainActivity : Activity() {
             webView.loadUrl(
                 RADICAL_URL
             )
+
+        } else {
+
+            webView.restoreState(
+                savedInstanceState
+            )
         }
+    }
+
+    // =========================
+    // PROCESSAR URL
+    // =========================
+
+    private fun processarUrl(
+        url: String
+    ): Boolean {
+
+        if (
+            !url.startsWith(
+                "radicalsystem:",
+                ignoreCase = true
+            )
+        ) {
+
+            return false
+        }
+
+        try {
+
+            val uri =
+                Uri.parse(url)
+
+            /*
+             Aceita:
+
+             radicalsystem://configurar-impressora
+
+             radicalsystem:configurar-impressora
+
+             radicalsystem://testar-impressao
+
+             radicalsystem:testar-impressao
+             */
+
+            var comando =
+                uri.host
+
+            if (comando.isNullOrBlank()) {
+
+                comando =
+                    uri.schemeSpecificPart
+                        ?.removePrefix("//")
+                        ?.substringBefore("?")
+                        ?.substringBefore("/")
+                        ?.trim()
+            }
+
+            comando =
+                comando
+                    ?.lowercase()
+                    ?.trim()
+
+            when (comando) {
+
+                "configurar-impressora" -> {
+
+                    abrirConfiguracaoImpressora()
+                }
+
+                "testar-impressao" -> {
+
+                    testarImpressao()
+                }
+
+                else -> {
+
+                    mostrarToast(
+                        "Comando não reconhecido: $comando"
+                    )
+                }
+            }
+
+        } catch (erro: Exception) {
+
+            mostrarToast(
+                "Erro no comando: ${erro.message}"
+            )
+        }
+
+        return true
     }
 
     // =========================
@@ -189,8 +287,10 @@ class MainActivity : Activity() {
         ) {
 
             return checkSelfPermission(
-                Manifest.permission.BLUETOOTH_CONNECT
-            ) == PackageManager.PERMISSION_GRANTED
+                Manifest.permission
+                    .BLUETOOTH_CONNECT
+            ) ==
+            PackageManager.PERMISSION_GRANTED
         }
 
         return true
@@ -205,15 +305,31 @@ class MainActivity : Activity() {
 
             requestPermissions(
                 arrayOf(
-                    Manifest.permission.BLUETOOTH_CONNECT
+                    Manifest.permission
+                        .BLUETOOTH_CONNECT
                 ),
                 BLUETOOTH_PERMISSION_CODE
             )
+
+        } else {
+
+            when (
+                acaoBluetoothPendente
+            ) {
+
+                "configurar" ->
+                    mostrarImpressorasPareadas()
+
+                "testar" ->
+                    testarImpressao()
+            }
+
+            acaoBluetoothPendente = null
         }
     }
 
     // =========================
-    // LISTAR DISPOSITIVOS PAREADOS
+    // LISTAR IMPRESSORAS
     // =========================
 
     private fun mostrarImpressorasPareadas() {
@@ -372,7 +488,8 @@ class MainActivity : Activity() {
         thread {
 
             var socket:
-                android.bluetooth.BluetoothSocket? = null
+                    android.bluetooth.BluetoothSocket? =
+                null
 
             try {
 
@@ -456,7 +573,9 @@ Impressora configurada!
             } finally {
 
                 try {
+
                     socket?.close()
+
                 } catch (_: Exception) {
                 }
             }
@@ -482,7 +601,7 @@ Impressora configurada!
     }
 
     // =========================
-    // PERMISSÕES
+    // RESULTADO DAS PERMISSÕES
     // =========================
 
     override fun onRequestPermissionsResult(
@@ -497,9 +616,9 @@ Impressora configurada!
             grantResults
         )
 
-        // -------------------------
-        // Câmera
-        // -------------------------
+        // =========================
+        // CÂMERA
+        // =========================
 
         if (
             requestCode ==
@@ -527,12 +646,13 @@ Impressora configurada!
                 pedido?.deny()
             }
 
-            pedidoCameraPendente = null
+            pedidoCameraPendente =
+                null
         }
 
-        // -------------------------
-        // Bluetooth
-        // -------------------------
+        // =========================
+        // BLUETOOTH
+        // =========================
 
         if (
             requestCode ==
@@ -550,10 +670,12 @@ Impressora configurada!
                 ) {
 
                     "configurar" -> {
+
                         mostrarImpressorasPareadas()
                     }
 
                     "testar" -> {
+
                         testarImpressao()
                     }
                 }
@@ -565,7 +687,8 @@ Impressora configurada!
                 )
             }
 
-            acaoBluetoothPendente = null
+            acaoBluetoothPendente =
+                null
         }
     }
 
