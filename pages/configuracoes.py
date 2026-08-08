@@ -51,41 +51,68 @@ st.write(
     "utilizada neste aparelho."
 )
 
-st.markdown(
+# ============================================
+# BOTÃO CONFIGURAR IMPRESSORA
+# ============================================
+
+st.components.v1.html(
     """
-    <a href="radicalsystem://configurar-impressora"
-       style="
-       display:block;
-       text-align:center;
-       padding:0.65rem;
-       margin-bottom:0.6rem;
-       border:1px solid rgba(128,128,128,0.4);
-       border-radius:0.5rem;
-       text-decoration:none;
-       font-weight:600;
-       ">
-       🔵 Configurar impressora Bluetooth
-    </a>
+    <button
+        onclick="configurarImpressora()"
+        style="
+            width:100%;
+            padding:12px;
+            font-size:16px;
+            font-weight:600;
+            border-radius:8px;
+            border:1px solid #777;
+            background:white;
+            cursor:pointer;
+        "
+    >
+        🔵 Configurar impressora Bluetooth
+    </button>
+
+    <script>
+        function configurarImpressora() {
+            window.top.location.href =
+                "radicalsystem://configurar-impressora";
+        }
+    </script>
     """,
-    unsafe_allow_html=True
+    height=60
 )
 
-st.markdown(
+# ============================================
+# BOTÃO TESTAR IMPRESSÃO
+# ============================================
+
+st.components.v1.html(
     """
-    <a href="radicalsystem://testar-impressao"
-       style="
-       display:block;
-       text-align:center;
-       padding:0.65rem;
-       border:1px solid rgba(128,128,128,0.4);
-       border-radius:0.5rem;
-       text-decoration:none;
-       font-weight:600;
-       ">
-       🧾 Testar impressão
-    </a>
+    <button
+        onclick="testarImpressao()"
+        style="
+            width:100%;
+            padding:12px;
+            font-size:16px;
+            font-weight:600;
+            border-radius:8px;
+            border:1px solid #777;
+            background:white;
+            cursor:pointer;
+        "
+    >
+        🧾 Testar impressão
+    </button>
+
+    <script>
+        function testarImpressao() {
+            window.top.location.href =
+                "radicalsystem://testar-impressao";
+        }
+    </script>
     """,
-    unsafe_allow_html=True
+    height=60
 )
 
 st.caption(
