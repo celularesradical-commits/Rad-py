@@ -51,19 +51,42 @@ st.write(
     "utilizada neste aparelho."
 )
 
-if st.button(
-    "🔵 Configurar impressora Bluetooth",
-    use_container_width=True
-):
-    st.query_params["configurar_impressora"] = "1"
-    st.rerun()
+st.markdown(
+    """
+    <a href="radicalsystem://configurar-impressora"
+       style="
+       display:block;
+       text-align:center;
+       padding:0.65rem;
+       margin-bottom:0.6rem;
+       border:1px solid rgba(128,128,128,0.4);
+       border-radius:0.5rem;
+       text-decoration:none;
+       font-weight:600;
+       ">
+       🔵 Configurar impressora Bluetooth
+    </a>
+    """,
+    unsafe_allow_html=True
+)
 
-if st.button(
-    "🧾 Testar impressão",
-    use_container_width=True
-):
-    st.query_params["testar_impressao"] = "1"
-    st.rerun()
+st.markdown(
+    """
+    <a href="radicalsystem://testar-impressao"
+       style="
+       display:block;
+       text-align:center;
+       padding:0.65rem;
+       border:1px solid rgba(128,128,128,0.4);
+       border-radius:0.5rem;
+       text-decoration:none;
+       font-weight:600;
+       ">
+       🧾 Testar impressão
+    </a>
+    """,
+    unsafe_allow_html=True
+)
 
 st.caption(
     "A impressora é configurada individualmente "
