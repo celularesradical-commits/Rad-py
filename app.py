@@ -24,6 +24,8 @@ if not st.session_state.get("logado", False):
 # Dados do Perfil
 # ============================================
 
+perfil_id = st.session_state.get("perfil_id")
+
 perfil_nome = st.session_state.get(
     "perfil_nome",
     "Usuário"
@@ -31,7 +33,7 @@ perfil_nome = st.session_state.get(
 
 perfil_loja = st.session_state.get(
     "perfil_loja",
-    ""
+    "Loja 1"
 )
 
 # ============================================
@@ -63,17 +65,68 @@ except Exception:
 st.title("📱 RadicalSystem")
 st.subheader("Sistema de Gestão para Assistência Técnica")
 
-st.markdown("---")
+st.divider()
 
 # ============================================
-# Perfil Logado
+# Perfil e Loja
 # ============================================
 
-st.write(
-    f"👤 **{perfil_nome}** • 🏪 **{perfil_loja}**"
-)
+col_usuario, col_loja = st.columns([2, 1])
 
-st.markdown("---")
+with col_usuario:
+
+    st.caption(
+        f"👤 {perfil_nome}"
+    )
+
+with col_loja:
+
+    lojas = [
+        "Loja 1",
+        "Loja 2"
+    ]
+
+    if perfil_loja not in lojas:
+        perfil_loja = "Loja 1"
+
+    loja_selecionada = st.selectbox(
+        "Loja atual",
+        lojas,
+        index=lojas.index(perfil_loja),
+        label_visibility="collapsed",
+        key="loja_menu"
+    )
+
+# ============================================
+# Alterar Loja
+# ============================================
+
+if loja_selecionada != perfil_loja:
+
+    try:
+
+        (
+            supabase.table("perfis")
+            .update(
+                {
+                    "loja": loja_selecionada
+                }
+            )
+            .eq("id", perfil_id)
+            .execute()
+        )
+
+        st.session_state["perfil_loja"] = loja_selecionada
+
+        st.rerun()
+
+    except Exception as erro:
+
+        st.error(
+            f"Não foi possível alterar a loja:\n\n{erro}"
+        )
+
+st.divider()
 
 st.write("Selecione um módulo abaixo:")
 
@@ -157,9 +210,8 @@ if st.button(
 # Rodapé
 # ============================================
 
-st.markdown("---")
+st.divider()
 
 st.caption(
-    f"Radical Celulares • RadicalSystem • "
-    f"{perfil_nome} • {perfil_loja}"
+    "Radical Celulares • RadicalSystem"
 )
