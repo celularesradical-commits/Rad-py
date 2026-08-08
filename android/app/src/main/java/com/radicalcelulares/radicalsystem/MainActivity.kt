@@ -3,7 +3,6 @@ package com.radicalcelulares.radicalsystem
 import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
-import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.pm.PackageManager
@@ -15,6 +14,8 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
+import java.util.UUID
+import kotlin.concurrent.thread
 
 class MainActivity : Activity() {
 
@@ -30,6 +31,12 @@ class MainActivity : Activity() {
 
     private val PREFS = "radicalsystem_config"
     private val PREF_IMPRESSORA = "impressora_mac"
+
+    // UUID padrão Serial Port Profile (SPP)
+    private val UUID_SPP: UUID =
+        UUID.fromString(
+            "00001101-0000-1000-8000-00805F9B34FB"
+        )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,7 +65,10 @@ class MainActivity : Activity() {
                 val url = request?.url?.toString()
                     ?: return false
 
-                // Detecta comando vindo do Streamlit
+                // -------------------------
+                // Configurar impressora
+                // -------------------------
+
                 if (
                     url.contains(
                         "configurar_impressora=1"
@@ -66,6 +76,25 @@ class MainActivity : Activity() {
                 ) {
 
                     abrirConfiguracaoImpressora()
+
+                    limparComandoUrl()
+
+                    return true
+                }
+
+                // -------------------------
+                // Testar impressão
+                // -------------------------
+
+                if (
+                    url.contains(
+                        "testar_impressao=1"
+                    )
+                ) {
+
+                    testarImpressao()
+
+                    limparComandoUrl()
 
                     return true
                 }
@@ -142,16 +171,59 @@ class MainActivity : Activity() {
     }
 
     // =========================
+    // LIMPAR COMANDO DA URL
+    // =========================
+
+    private fun limparComandoUrl() {
+
+        runOnUiThread {
+
+            webView.loadUrl(
+                "https://radicalsystem.streamlit.app/configuracoes"
+            )
+        }
+    }
+
+    // =========================
     // CONFIGURAR IMPRESSORA
     // =========================
 
     private fun abrirConfiguracaoImpressora() {
 
+        if (!temPermissaoBluetooth()) {
+
+            pedirPermissaoBluetooth()
+
+            return
+        }
+
+        mostrarImpressorasPareadas()
+    }
+
+    // =========================
+    // PERMISSÃO BLUETOOTH
+    // =========================
+
+    private fun temPermissaoBluetooth(): Boolean {
+
         if (
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-            checkSelfPermission(
+            Build.VERSION.SDK_INT >=
+            Build.VERSION_CODES.S
+        ) {
+
+            return checkSelfPermission(
                 Manifest.permission.BLUETOOTH_CONNECT
-            ) != PackageManager.PERMISSION_GRANTED
+            ) == PackageManager.PERMISSION_GRANTED
+        }
+
+        return true
+    }
+
+    private fun pedirPermissaoBluetooth() {
+
+        if (
+            Build.VERSION.SDK_INT >=
+            Build.VERSION_CODES.S
         ) {
 
             requestPermissions(
@@ -160,11 +232,7 @@ class MainActivity : Activity() {
                 ),
                 BLUETOOTH_PERMISSION_CODE
             )
-
-            return
         }
-
-        mostrarImpressorasPareadas()
     }
 
     // =========================
@@ -185,28 +253,25 @@ class MainActivity : Activity() {
 
             if (bluetoothAdapter == null) {
 
-                Toast.makeText(
-                    this,
-                    "Bluetooth não disponível neste aparelho.",
-                    Toast.LENGTH_LONG
-                ).show()
+                mostrarToast(
+                    "Bluetooth não disponível neste aparelho."
+                )
 
                 return
             }
 
             if (!bluetoothAdapter.isEnabled) {
 
-                Toast.makeText(
-                    this,
-                    "Ative o Bluetooth do celular primeiro.",
-                    Toast.LENGTH_LONG
-                ).show()
+                mostrarToast(
+                    "Ative o Bluetooth do celular primeiro."
+                )
 
                 return
             }
 
             val dispositivos =
-                bluetoothAdapter.bondedDevices
+                bluetoothAdapter
+                    .bondedDevices
                     .toList()
                     .sortedBy {
                         it.name ?: ""
@@ -214,11 +279,9 @@ class MainActivity : Activity() {
 
             if (dispositivos.isEmpty()) {
 
-                Toast.makeText(
-                    this,
-                    "Nenhum dispositivo Bluetooth pareado.",
-                    Toast.LENGTH_LONG
-                ).show()
+                mostrarToast(
+                    "Nenhum dispositivo Bluetooth pareado."
+                )
 
                 return
             }
@@ -227,7 +290,8 @@ class MainActivity : Activity() {
                 dispositivos.map {
 
                     val nome =
-                        it.name ?: "Dispositivo Bluetooth"
+                        it.name
+                            ?: "Dispositivo Bluetooth"
 
                     "$nome\n${it.address}"
 
@@ -248,14 +312,12 @@ class MainActivity : Activity() {
                         dispositivo.address
                     )
 
-                    Toast.makeText(
-                        this,
+                    mostrarToast(
                         "Impressora selecionada: ${
                             dispositivo.name
                                 ?: dispositivo.address
-                        }",
-                        Toast.LENGTH_LONG
-                    ).show()
+                        }"
+                    )
                 }
                 .setNegativeButton(
                     "Cancelar",
@@ -265,11 +327,9 @@ class MainActivity : Activity() {
 
         } catch (erro: Exception) {
 
-            Toast.makeText(
-                this,
-                "Erro ao acessar Bluetooth: ${erro.message}",
-                Toast.LENGTH_LONG
-            ).show()
+            mostrarToast(
+                "Erro ao acessar Bluetooth: ${erro.message}"
+            )
         }
     }
 
@@ -291,6 +351,147 @@ class MainActivity : Activity() {
                 mac
             )
             .apply()
+    }
+
+    // =========================
+    // TESTAR IMPRESSÃO
+    // =========================
+
+    private fun testarImpressao() {
+
+        if (!temPermissaoBluetooth()) {
+
+            pedirPermissaoBluetooth()
+
+            return
+        }
+
+        val mac =
+            getSharedPreferences(
+                PREFS,
+                Context.MODE_PRIVATE
+            )
+                .getString(
+                    PREF_IMPRESSORA,
+                    null
+                )
+
+        if (mac.isNullOrBlank()) {
+
+            mostrarToast(
+                "Configure uma impressora primeiro."
+            )
+
+            return
+        }
+
+        mostrarToast(
+            "Conectando à impressora..."
+        )
+
+        thread {
+
+            try {
+
+                val bluetoothManager =
+                    getSystemService(
+                        Context.BLUETOOTH_SERVICE
+                    ) as BluetoothManager
+
+                val bluetoothAdapter =
+                    bluetoothManager.adapter
+
+                if (bluetoothAdapter == null) {
+
+                    mostrarToast(
+                        "Bluetooth não disponível."
+                    )
+
+                    return@thread
+                }
+
+                val dispositivo =
+                    bluetoothAdapter
+                        .getRemoteDevice(mac)
+
+                bluetoothAdapter
+                    .cancelDiscovery()
+
+                val socket =
+                    dispositivo
+                        .createRfcommSocketToServiceRecord(
+                            UUID_SPP
+                        )
+
+                socket.connect()
+
+                val saida =
+                    socket.outputStream
+
+                // Inicializar ESC/POS
+                saida.write(
+                    byteArrayOf(
+                        0x1B,
+                        0x40
+                    )
+                )
+
+                val texto = """
+RADICAL CELULARES
+------------------------------
+TESTE DE IMPRESSAO
+
+RadicalSystem
+Impressora configurada!
+
+------------------------------
+
+
+
+""".trimIndent()
+
+                saida.write(
+                    texto.toByteArray(
+                        Charsets.UTF_8
+                    )
+                )
+
+                saida.flush()
+
+                Thread.sleep(300)
+
+                saida.close()
+                socket.close()
+
+                mostrarToast(
+                    "Impressão enviada!"
+                )
+
+            } catch (erro: Exception) {
+
+                mostrarToast(
+                    "Erro ao imprimir: ${erro.message}"
+                )
+            }
+        }
+    }
+
+    // =========================
+    // TOAST
+    // =========================
+
+    private fun mostrarToast(
+        mensagem: String
+    ) {
+
+        runOnUiThread {
+
+            Toast.makeText(
+                this,
+                mensagem,
+                Toast.LENGTH_LONG
+            ).show()
+        }
     }
 
     // =========================
@@ -329,7 +530,8 @@ class MainActivity : Activity() {
 
                 pedido?.grant(
                     arrayOf(
-                        PermissionRequest.RESOURCE_VIDEO_CAPTURE
+                        PermissionRequest
+                            .RESOURCE_VIDEO_CAPTURE
                     )
                 )
 
@@ -360,11 +562,9 @@ class MainActivity : Activity() {
 
             } else {
 
-                Toast.makeText(
-                    this,
-                    "Permissão Bluetooth necessária para configurar a impressora.",
-                    Toast.LENGTH_LONG
-                ).show()
+                mostrarToast(
+                    "Permissão Bluetooth necessária."
+                )
             }
         }
     }
