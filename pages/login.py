@@ -1,3 +1,4 @@
+import hmac
 import streamlit as st
 from database import supabase
 
@@ -10,9 +11,17 @@ st.set_page_config(
 st.title("👤 RadicalSystem")
 st.subheader("Entrar no perfil")
 
-# ===========================
-# BUSCAR PERFIS ATIVOS
-# ===========================
+# ============================================
+# CÓDIGO DE CONVITE
+# ============================================
+
+CODIGO_CONVITE = str(
+    st.secrets.get("CODIGO_CONVITE", "")
+)
+
+# ============================================
+# BUSCAR PERFIS
+# ============================================
 
 try:
 
@@ -34,20 +43,99 @@ except Exception as erro:
 
     st.stop()
 
+# ============================================
+# LOGIN
+# ============================================
 
-# ===========================
-# PRIMEIRO PERFIL
-# ===========================
+if perfis:
 
-if not perfis:
+    nomes = [
+        perfil["nome"]
+        for perfil in perfis
+    ]
+
+    nome_escolhido = st.selectbox(
+        "👤 Usuário",
+        nomes
+    )
+
+    pin_digitado = st.text_input(
+        "🔑 PIN",
+        type="password",
+        max_chars=4
+    )
+
+    if st.button(
+        "Entrar",
+        use_container_width=True
+    ):
+
+        perfil = next(
+            (
+                item
+                for item in perfis
+                if item["nome"] == nome_escolhido
+            ),
+            None
+        )
+
+        if perfil is None:
+
+            st.error(
+                "Perfil não encontrado."
+            )
+
+        elif str(perfil["pin"]) != pin_digitado:
+
+            st.error(
+                "PIN incorreto."
+            )
+
+        else:
+
+            st.session_state["perfil_id"] = perfil["id"]
+            st.session_state["perfil_nome"] = perfil["nome"]
+            st.session_state["perfil_loja"] = perfil["loja"]
+            st.session_state["logado"] = True
+
+            st.switch_page("app.py")
+
+else:
 
     st.info(
-        "Nenhum perfil cadastrado. "
-        "Crie o primeiro perfil."
+        "Nenhum perfil cadastrado."
+    )
+
+# ============================================
+# CRIAR NOVO PERFIL
+# ============================================
+
+st.divider()
+
+if "mostrar_cadastro" not in st.session_state:
+    st.session_state.mostrar_cadastro = False
+
+if not st.session_state.mostrar_cadastro:
+
+    if st.button(
+        "➕ Criar novo perfil",
+        use_container_width=True
+    ):
+
+        st.session_state.mostrar_cadastro = True
+        st.rerun()
+
+else:
+
+    st.subheader("➕ Criar novo perfil")
+
+    codigo_digitado = st.text_input(
+        "🔐 Código de convite",
+        type="password"
     )
 
     nome = st.text_input(
-        "👤 Nome"
+        "👤 Nome do usuário"
     )
 
     loja = st.selectbox(
@@ -70,114 +158,97 @@ if not perfis:
         max_chars=4
     )
 
-    if st.button(
-        "➕ Criar primeiro perfil",
-        use_container_width=True
-    ):
+    col1, col2 = st.columns(2)
 
-        if not nome.strip():
+    with col1:
 
-            st.warning(
-                "Digite o nome do usuário."
-            )
-
-        elif (
-            len(pin) != 4
-            or not pin.isdigit()
+        if st.button(
+            "✅ Criar perfil",
+            use_container_width=True
         ):
 
-            st.warning(
-                "O PIN deve ter exatamente 4 números."
-            )
-
-        elif pin != confirmar_pin:
-
-            st.warning(
-                "Os PINs não conferem."
-            )
-
-        else:
-
-            try:
-
-                supabase.table(
-                    "perfis"
-                ).insert(
-                    {
-                        "nome": nome.strip(),
-                        "pin": pin,
-                        "loja": loja,
-                        "ativo": True
-                    }
-                ).execute()
-
-                st.success(
-                    "✅ Perfil criado com sucesso."
-                )
-
-                st.rerun()
-
-            except Exception as erro:
+            if not CODIGO_CONVITE:
 
                 st.error(
-                    f"Erro ao criar perfil:\n\n{erro}"
+                    "O código de convite ainda não foi "
+                    "configurado nos Secrets."
                 )
 
-    st.stop()
+            elif not hmac.compare_digest(
+                codigo_digitado,
+                CODIGO_CONVITE
+            ):
 
+                st.error(
+                    "Código de convite incorreto."
+                )
 
-# ===========================
-# LOGIN
-# ===========================
+            elif not nome.strip():
 
-nomes = [
-    perfil["nome"]
-    for perfil in perfis
-]
+                st.warning(
+                    "Digite o nome do usuário."
+                )
 
-nome_escolhido = st.selectbox(
-    "👤 Usuário",
-    nomes
-)
+            elif (
+                len(pin) != 4
+                or not pin.isdigit()
+            ):
 
-pin_digitado = st.text_input(
-    "🔑 PIN",
-    type="password",
-    max_chars=4
-)
+                st.warning(
+                    "O PIN deve ter exatamente 4 números."
+                )
 
+            elif pin != confirmar_pin:
 
-if st.button(
-    "Entrar",
-    use_container_width=True
-):
+                st.warning(
+                    "Os PINs não conferem."
+                )
 
-    perfil = next(
-        (
-            item
-            for item in perfis
-            if item["nome"] == nome_escolhido
-        ),
-        None
-    )
+            elif any(
+                perfil["nome"].strip().lower()
+                == nome.strip().lower()
+                for perfil in perfis
+            ):
 
-    if perfil is None:
+                st.warning(
+                    "Já existe um perfil com esse nome."
+                )
 
-        st.error(
-            "Perfil não encontrado."
-        )
+            else:
 
-    elif str(perfil["pin"]) != pin_digitado:
+                try:
 
-        st.error(
-            "PIN incorreto."
-        )
+                    supabase.table(
+                        "perfis"
+                    ).insert(
+                        {
+                            "nome": nome.strip(),
+                            "pin": pin,
+                            "loja": loja,
+                            "ativo": True
+                        }
+                    ).execute()
 
-    else:
+                    st.session_state.mostrar_cadastro = False
 
-        st.session_state["perfil_id"] = perfil["id"]
-        st.session_state["perfil_nome"] = perfil["nome"]
-        st.session_state["perfil_loja"] = perfil["loja"]
-        st.session_state["logado"] = True
+                    st.success(
+                        "✅ Perfil criado com sucesso."
+                    )
 
-        st.switch_page("app.py")
+                    st.rerun()
+
+                except Exception as erro:
+
+                    st.error(
+                        f"Erro ao criar perfil:\n\n{erro}"
+                    )
+
+    with col2:
+
+        if st.button(
+            "❌ Cancelar",
+            use_container_width=True
+        ):
+
+            st.session_state.mostrar_cadastro = False
+            st.rerun()
