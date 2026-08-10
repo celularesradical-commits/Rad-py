@@ -2,7 +2,7 @@ import streamlit as st
 from google import genai
 
 from prompts import PROMPT
-from prompt_panic import PROMPT_PANIC
+ 
 
 
 class AIOnlineClient:
