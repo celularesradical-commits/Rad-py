@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.webkit.CookieManager
 import android.webkit.PermissionRequest
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
@@ -55,7 +56,29 @@ class MainActivity : Activity() {
         webView.settings.allowFileAccess = false
         webView.settings.allowContentAccess = false
 
-        webView.settings.javaScriptCanOpenWindowsAutomatically = true
+        // Não permitir múltiplas janelas
+        webView.settings.javaScriptCanOpenWindowsAutomatically = false
+        webView.settings.setSupportMultipleWindows(false)
+
+        // =========================
+        // COOKIES / SESSÃO
+        // =========================
+
+        val cookieManager =
+            CookieManager.getInstance()
+
+        cookieManager.setAcceptCookie(true)
+
+        if (
+            Build.VERSION.SDK_INT >=
+            Build.VERSION_CODES.LOLLIPOP
+        ) {
+
+            cookieManager.setAcceptThirdPartyCookies(
+                webView,
+                true
+            )
+        }
 
         // =========================
         // INTERCEPTAR COMANDOS
@@ -724,5 +747,18 @@ Impressora configurada!
         super.onSaveInstanceState(
             outState
         )
+    }
+
+    // =========================
+    // SALVAR COOKIES AO PAUSAR
+    // =========================
+
+    override fun onPause() {
+
+        super.onPause()
+
+        CookieManager
+            .getInstance()
+            .flush()
     }
 }
