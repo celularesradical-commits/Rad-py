@@ -1,6 +1,8 @@
 import streamlit as st
+
 from database import salvar_os, gerar_numero_os
 from fotos import enviar_foto
+
 
 st.set_page_config(
     page_title="Novo Reparo",
@@ -8,44 +10,119 @@ st.set_page_config(
     layout="centered"
 )
 
-# -------------------------
+
+# ============================================
+# Loja atual
+# ============================================
+
+loja_atual = st.session_state.get(
+    "perfil_loja",
+    "Loja 1"
+)
+
+
+# ============================================
 # Número da próxima OS
-# -------------------------
+# ============================================
 
 if "proxima_os" not in st.session_state:
-    st.session_state.proxima_os = gerar_numero_os()
 
-# -------------------------
+    st.session_state.proxima_os = (
+        gerar_numero_os()
+    )
+
+
+# ============================================
 # Após salvar
-# -------------------------
+# ============================================
 
-if st.session_state.get("os_salva", False):
+if st.session_state.get(
+    "os_salva",
+    False
+):
 
     st.success(
         f"✅ Nota e foto salvas com sucesso!\n\n"
-        f"Ordem de Serviço Nº {st.session_state.numero_os}"
+        f"Ordem de Serviço Nº "
+        f"{st.session_state.numero_os} "
+        f"• 🏪 {loja_atual}"
     )
 
     if st.button(
         "OK",
         use_container_width=True
     ):
-        st.session_state.clear()
-        st.switch_page("app.py")
+
+        # ------------------------------------
+        # Limpa somente dados da nova OS.
+        # NÃO apaga o login.
+        # ------------------------------------
+
+        st.session_state.pop(
+            "os_salva",
+            None
+        )
+
+        st.session_state.pop(
+            "numero_os",
+            None
+        )
+
+        st.session_state.pop(
+            "proxima_os",
+            None
+        )
+
+        # ------------------------------------
+        # Vai direto para Agenda
+        # ------------------------------------
+
+        st.switch_page(
+            "pages/agenda.py"
+        )
 
     st.stop()
 
-# -------------------------
+
+# ============================================
 # Tela
-# -------------------------
+# ============================================
 
-st.title("🔧 Novo Reparo")
-
-st.text_input(
-    "📄 Número da Ordem de Serviço",
-    value=str(st.session_state.proxima_os),
-    disabled=True
+st.title(
+    "🔧 Novo Reparo"
 )
+
+
+# ============================================
+# Número da OS + Loja
+# ============================================
+
+col_os, col_loja = st.columns(
+    [2, 1]
+)
+
+with col_os:
+
+    st.text_input(
+        "📄 Número da Ordem de Serviço",
+        value=str(
+            st.session_state.proxima_os
+        ),
+        disabled=True
+    )
+
+with col_loja:
+
+    st.text_input(
+        "🏪 Loja",
+        value=loja_atual,
+        disabled=True
+    )
+
+
+# ============================================
+# Dados do aparelho
+# ============================================
 
 modelo = st.text_input(
     "📱 Modelo do Celular"
@@ -80,13 +157,16 @@ observacoes = st.text_area(
     height=120
 )
 
-# -------------------------
+
+# ============================================
 # Foto
-# -------------------------
+# ============================================
 
 st.divider()
 
-st.subheader("📸 Foto do Aparelho")
+st.subheader(
+    "📸 Foto do Aparelho"
+)
 
 foto = st.camera_input(
     "Fotografar aparelho"
@@ -100,13 +180,15 @@ if foto is not None:
         use_container_width=True
     )
 
-# -------------------------
+
+# ============================================
 # Botões
-# -------------------------
+# ============================================
 
 st.divider()
 
 col1, col2 = st.columns(2)
+
 
 with col1:
 
@@ -115,16 +197,21 @@ with col1:
         use_container_width=True
     ):
 
-        if modelo.strip() == "" or cliente.strip() == "":
+        if (
+            modelo.strip() == ""
+            or cliente.strip() == ""
+        ):
 
             st.warning(
-                "Preencha o modelo e o nome do cliente."
+                "Preencha o modelo e "
+                "o nome do cliente."
             )
 
         elif foto is None:
 
             st.warning(
-                "Tire uma foto do aparelho antes de salvar."
+                "Tire uma foto do aparelho "
+                "antes de salvar."
             )
 
         else:
@@ -138,7 +225,8 @@ with col1:
                     cliente,
                     contato,
                     data_retirada,
-                    observacoes
+                    observacoes,
+                    loja_atual
                 )
 
                 enviar_foto(
@@ -146,16 +234,23 @@ with col1:
                     foto
                 )
 
-                st.session_state.numero_os = numero
-                st.session_state.os_salva = True
+                st.session_state[
+                    "numero_os"
+                ] = numero
+
+                st.session_state[
+                    "os_salva"
+                ] = True
 
                 st.rerun()
 
             except Exception as erro:
 
                 st.error(
-                    f"Erro ao salvar a ordem de serviço:\n\n{erro}"
+                    "Erro ao salvar a "
+                    f"ordem de serviço:\n\n{erro}"
                 )
+
 
 with col2:
 
@@ -163,4 +258,7 @@ with col2:
         "⬅️ Voltar",
         use_container_width=True
     ):
-        st.switch_page("app.py")
+
+        st.switch_page(
+            "app.py"
+        )
