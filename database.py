@@ -47,7 +47,8 @@ def salvar_os(
     cliente,
     contato,
     retirada,
-    observacoes
+    observacoes,
+    loja
 ):
 
     numero = gerar_numero_os()
@@ -64,7 +65,8 @@ def salvar_os(
         ).isoformat(),
         "data_retirada": str(retirada),
         "observacoes": observacoes,
-        "status": "Em andamento"
+        "status": "Em andamento",
+        "loja": loja
     }
 
     (
