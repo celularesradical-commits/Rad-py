@@ -4,7 +4,7 @@ import base64
 import hashlib
 import time
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import streamlit as st
 
@@ -18,9 +18,14 @@ from streamlit_cookies_controller import CookieController
 
 COOKIE_LOGIN = "radicalsystem_login"
 
-# O navegador/aparelho ficará autorizado
-# por 90 dias.
 DIAS_LOGIN = 90
+
+MAX_AGE_LOGIN = (
+    DIAS_LOGIN
+    * 24
+    * 60
+    * 60
+)
 
 SESSION_SECRET = str(
     st.secrets.get(
@@ -47,13 +52,9 @@ def obter_controller():
 
 def criar_token(perfil):
 
-    expiracao = int(
-        time.time()
-    ) + (
-        DIAS_LOGIN
-        * 24
-        * 60
-        * 60
+    expiracao = (
+        int(time.time())
+        + MAX_AGE_LOGIN
     )
 
     dados = {
@@ -84,7 +85,7 @@ def criar_token(perfil):
 
 
 # ============================================
-# LER E VALIDAR TOKEN
+# LER TOKEN
 # ============================================
 
 def ler_token(token):
@@ -143,7 +144,7 @@ def ler_token(token):
 
 
 # ============================================
-# APLICAR PERFIL NA SESSÃO
+# APLICAR LOGIN
 # ============================================
 
 def aplicar_login(perfil):
@@ -166,21 +167,19 @@ def aplicar_login(perfil):
 
 
 # ============================================
-# SALVAR LOGIN NO NAVEGADOR
+# GRAVAR COOKIE PERSISTENTE
 # ============================================
 
-def salvar_login(perfil):
-
-    aplicar_login(
-        perfil
-    )
+def gravar_cookie(perfil):
 
     token = criar_token(
         perfil
     )
 
     expiracao = (
-        datetime.now()
+        datetime.now(
+            timezone.utc
+        )
         + timedelta(
             days=DIAS_LOGIN
         )
@@ -195,9 +194,14 @@ def salvar_login(perfil):
             token,
             path="/",
             expires=expiracao,
+            max_age=MAX_AGE_LOGIN,
             secure=True,
             same_site="lax"
         )
+
+        st.session_state[
+            "_cookie_login_gravado"
+        ] = True
 
     except Exception:
 
@@ -205,15 +209,28 @@ def salvar_login(perfil):
 
 
 # ============================================
-# LER COOKIE
+# SALVAR LOGIN
+# ============================================
+
+def salvar_login(perfil):
+
+    aplicar_login(
+        perfil
+    )
+
+    gravar_cookie(
+        perfil
+    )
+
+
+# ============================================
+# BUSCAR COOKIE
 # ============================================
 
 def obter_cookie_login():
 
     # ----------------------------------------
-    # PRIMEIRA OPÇÃO
-    # Cookie recebido junto com a sessão
-    # do navegador.
+    # COOKIE ENVIADO NO INÍCIO DA SESSÃO
     # ----------------------------------------
 
     try:
@@ -230,13 +247,14 @@ def obter_cookie_login():
         pass
 
     # ----------------------------------------
-    # SEGUNDA OPÇÃO
-    # CookieController como alternativa.
+    # COOKIE CONTROLLER
     # ----------------------------------------
 
     try:
 
         controller = obter_controller()
+
+        controller.refresh()
 
         token = controller.get(
             COOKIE_LOGIN
@@ -253,21 +271,56 @@ def obter_cookie_login():
 
 
 # ============================================
-# RECUPERAR LOGIN AUTOMATICAMENTE
+# RECUPERAR LOGIN
 # ============================================
 
 def recuperar_login():
 
-    # Já está logado nesta sessão.
+    # ========================================
+    # JÁ ESTÁ LOGADO
+    # ========================================
+
     if st.session_state.get(
         "logado",
         False
     ):
 
+        # Reforça o cookie uma vez por sessão.
+        if not st.session_state.get(
+            "_cookie_login_gravado",
+            False
+        ):
+
+            perfil = {
+                "id":
+                    st.session_state.get(
+                        "perfil_id"
+                    ),
+
+                "nome":
+                    st.session_state.get(
+                        "perfil_nome"
+                    ),
+
+                "loja":
+                    st.session_state.get(
+                        "perfil_loja"
+                    )
+            }
+
+            if perfil["id"]:
+
+                gravar_cookie(
+                    perfil
+                )
+
         return True
 
-    # Sessão foi perdida.
-    # Vamos procurar o cookie.
+
+    # ========================================
+    # PROCURAR COOKIE
+    # ========================================
+
     token = obter_cookie_login()
 
     dados = ler_token(
@@ -286,10 +339,10 @@ def recuperar_login():
 
         return False
 
-    # ----------------------------------------
-    # Confirmar que o perfil ainda existe
-    # e continua ativo.
-    # ----------------------------------------
+
+    # ========================================
+    # VALIDAR PERFIL NO SUPABASE
+    # ========================================
 
     try:
 
@@ -311,9 +364,8 @@ def recuperar_login():
 
     except Exception:
 
-        # Se o Supabase tiver uma falha
-        # temporária, não destruímos o cookie.
         return False
+
 
     if not resposta.data:
 
@@ -321,10 +373,24 @@ def recuperar_login():
 
         return False
 
+
     perfil = resposta.data[0]
 
-    # Reconstrói toda a sessão.
+
+    # ========================================
+    # RECONSTRUIR SESSÃO
+    # ========================================
+
     aplicar_login(
+        perfil
+    )
+
+
+    # ========================================
+    # RENOVAR COOKIE
+    # ========================================
+
+    gravar_cookie(
         perfil
     )
 
@@ -338,6 +404,7 @@ def recuperar_login():
 def exigir_login():
 
     if recuperar_login():
+
         return True
 
     st.switch_page(
@@ -348,7 +415,7 @@ def exigir_login():
 
 
 # ============================================
-# LOGOUT
+# SAIR
 # ============================================
 
 def apagar_login():
@@ -357,7 +424,8 @@ def apagar_login():
         "perfil_id",
         "perfil_nome",
         "perfil_loja",
-        "logado"
+        "logado",
+        "_cookie_login_gravado"
     ]
 
     for chave in chaves:
