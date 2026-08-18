@@ -1,11 +1,8 @@
 import hmac
-import json
-import base64
-import hashlib
 import streamlit as st
 
 from database import supabase
-from streamlit_cookies_controller import CookieController
+from auth import recuperar_login, salvar_login
 
 
 st.set_page_config(
@@ -16,159 +13,16 @@ st.set_page_config(
 
 
 # ============================================
-# CONFIGURAÇÃO DE SESSÃO
+# RECUPERAR LOGIN AUTOMATICAMENTE
 # ============================================
 
-COOKIE_LOGIN = "radicalsystem_login"
+if recuperar_login():
 
-SESSION_SECRET = str(
-    st.secrets.get(
-        "SESSION_SECRET",
-        "radicalsystem-chave-temporaria"
-    )
-)
-
-cookies = CookieController()
-
-
-# ============================================
-# FUNÇÕES DO LOGIN
-# ============================================
-
-def criar_token(perfil):
-
-    dados = {
-        "id": perfil["id"],
-        "nome": perfil["nome"],
-        "loja": perfil["loja"]
-    }
-
-    dados_json = json.dumps(
-        dados,
-        separators=(",", ":"),
-        ensure_ascii=False
+    st.switch_page(
+        "app.py"
     )
 
-    dados_base64 = base64.urlsafe_b64encode(
-        dados_json.encode("utf-8")
-    ).decode("utf-8")
-
-    assinatura = hmac.new(
-        SESSION_SECRET.encode("utf-8"),
-        dados_base64.encode("utf-8"),
-        hashlib.sha256
-    ).hexdigest()
-
-    return f"{dados_base64}.{assinatura}"
-
-
-def ler_token(token):
-
-    try:
-
-        if not token:
-            return None
-
-        partes = token.split(".")
-
-        if len(partes) != 2:
-            return None
-
-        dados_base64 = partes[0]
-        assinatura_recebida = partes[1]
-
-        assinatura_correta = hmac.new(
-            SESSION_SECRET.encode("utf-8"),
-            dados_base64.encode("utf-8"),
-            hashlib.sha256
-        ).hexdigest()
-
-        if not hmac.compare_digest(
-            assinatura_recebida,
-            assinatura_correta
-        ):
-            return None
-
-        dados_json = base64.urlsafe_b64decode(
-            dados_base64.encode("utf-8")
-        ).decode("utf-8")
-
-        return json.loads(
-            dados_json
-        )
-
-    except Exception:
-
-        return None
-
-
-def aplicar_login(perfil):
-
-    st.session_state["perfil_id"] = perfil["id"]
-    st.session_state["perfil_nome"] = perfil["nome"]
-    st.session_state["perfil_loja"] = perfil["loja"]
-    st.session_state["logado"] = True
-
-
-# ============================================
-# VERIFICAR COOKIE EXISTENTE
-# ============================================
-
-if not st.session_state.get(
-    "logado",
-    False
-):
-
-    token_cookie = cookies.get(
-        COOKIE_LOGIN
-    )
-
-    perfil_cookie = ler_token(
-        token_cookie
-    )
-
-    if perfil_cookie:
-
-        try:
-
-            resposta_perfil = (
-                supabase.table("perfis")
-                .select("*")
-                .eq(
-                    "id",
-                    perfil_cookie["id"]
-                )
-                .eq(
-                    "ativo",
-                    True
-                )
-                .limit(1)
-                .execute()
-            )
-
-            if resposta_perfil.data:
-
-                perfil_banco = (
-                    resposta_perfil.data[0]
-                )
-
-                aplicar_login(
-                    perfil_banco
-                )
-
-                st.switch_page(
-                    "app.py"
-                )
-
-            else:
-
-                cookies.remove(
-                    COOKIE_LOGIN
-                )
-
-        except Exception:
-
-            pass
+    st.stop()
 
 
 # ============================================
@@ -198,7 +52,8 @@ CODIGO_CONVITE = str(
 try:
 
     resposta = (
-        supabase.table("perfis")
+        supabase
+        .table("perfis")
         .select("*")
         .eq(
             "ativo",
@@ -275,22 +130,19 @@ if perfis:
 
         else:
 
-            aplicar_login(
-                perfil
-            )
+            # =================================
+            # SALVA SESSÃO + COOKIE
+            # =================================
 
-            token = criar_token(
+            salvar_login(
                 perfil
-            )
-
-            cookies.set(
-                COOKIE_LOGIN,
-                token
             )
 
             st.switch_page(
                 "app.py"
             )
+
+            st.stop()
 
 else:
 
